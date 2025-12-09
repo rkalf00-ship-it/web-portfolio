@@ -1177,10 +1177,14 @@
         </div>
     </div>
 
-    <!-- 백업/복원 모달 -->
-    <div class="modal-overlay" id="backupModal">
+
+    <!-- 항목 추가 모달 -->
+    <div class="modal-overlay" id="addModal">
+        <div class="modal">
+            <h2 class="modal-title" id="addModalTitle">📄 새 항목 추가</h2>
+            <input type="hidden" id="addCategory">
             <div class="form-group">
-                <label class="form-label">파일 업로드 (최대 100MB)</label>
+                <label class="form-label">파일 업로드 (최대 10MB)</label>
                 <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('fileInput').click()">
                     <div class="file-upload-icon">📁</div>
                     <div class="file-upload-text">클릭하거나 파일을 드래그하세요</div>
