@@ -518,6 +518,14 @@
         .drag-handle.show { display: flex; }
         .drag-handle:hover { background: var(--pastel-blue-light); border-color: var(--pastel-blue); }
 
+        /* 그리드 드래그 오버 스타일 */
+        .portfolio-grid.drag-over-grid {
+            background: var(--pastel-blue-light);
+            border: 2px dashed var(--pastel-blue);
+            border-radius: 12px;
+            transition: all 0.2s;
+        }
+
         /* 섹션 추가 버튼 */
         .add-section-btn {
             display: none;
@@ -2056,10 +2064,18 @@
             if (!handle) return;
             
             handle.addEventListener('mousedown', () => {
-                card.draggable = true;
+                // 로그인 상태에서만 드래그 가능
+                if (isLoggedIn) {
+                    card.draggable = true;
+                }
             });
             
             card.addEventListener('dragstart', (e) => {
+                // 로그인 체크
+                if (!isLoggedIn) {
+                    e.preventDefault();
+                    return;
+                }
                 draggedItem = { element: card, category, itemId };
                 card.classList.add('dragging');
                 e.dataTransfer.effectAllowed = 'move';
@@ -2069,11 +2085,13 @@
                 card.draggable = false;
                 card.classList.remove('dragging');
                 draggedItem = null;
+                // 모든 drag-over 클래스 제거
+                document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
             });
             
             card.addEventListener('dragover', (e) => {
                 e.preventDefault();
-                if (!draggedItem || draggedItem.category !== category) return;
+                if (!draggedItem || !isLoggedIn) return;
                 card.classList.add('drag-over');
             });
             
@@ -2085,22 +2103,80 @@
                 e.preventDefault();
                 card.classList.remove('drag-over');
                 
-                if (!draggedItem || draggedItem.category !== category) return;
+                if (!draggedItem || !isLoggedIn) return;
                 if (draggedItem.element === card) return;
                 
-                const grid = card.parentElement;
-                const cards = Array.from(grid.querySelectorAll('.portfolio-card'));
-                const draggedIndex = cards.indexOf(draggedItem.element);
-                const dropIndex = cards.indexOf(card);
+                const sourceCategory = draggedItem.category;
+                const targetCategory = card.dataset.category;
+                const targetGrid = card.parentElement;
                 
-                if (draggedIndex < dropIndex) {
-                    card.after(draggedItem.element);
-                } else {
+                // 같은 섹션 내 이동
+                if (sourceCategory === targetCategory) {
+                    const cards = Array.from(targetGrid.querySelectorAll('.portfolio-card'));
+                    const draggedIndex = cards.indexOf(draggedItem.element);
+                    const dropIndex = cards.indexOf(card);
+                    
+                    if (draggedIndex < dropIndex) {
+                        card.after(draggedItem.element);
+                    } else {
+                        card.before(draggedItem.element);
+                    }
+                    
+                    await saveNewOrder(sourceCategory);
+                } 
+                // 다른 섹션으로 이동
+                else {
+                    // DOM에서 카드 이동
                     card.before(draggedItem.element);
+                    
+                    // 카드의 카테고리 데이터 업데이트
+                    draggedItem.element.dataset.category = targetCategory;
+                    
+                    // Firebase 데이터 업데이트
+                    await moveItemToSection(draggedItem.itemId, sourceCategory, targetCategory);
+                    
+                    // 양쪽 섹션 순서 저장
+                    await saveNewOrder(sourceCategory);
+                    await saveNewOrder(targetCategory);
+                    
+                    // 카운트 업데이트
+                    await updateSectionCounts();
                 }
-                
-                await saveNewOrder(category);
             });
+        }
+        
+        // 아이템을 다른 섹션으로 이동
+        async function moveItemToSection(itemId, fromCategory, toCategory) {
+            try {
+                const snapshot = await database.ref('metadata/' + itemId).once('value');
+                const item = snapshot.val();
+                if (item) {
+                    item.category = toCategory;
+                    await database.ref('metadata/' + itemId).set(item);
+                }
+            } catch (error) {
+                console.error('moveItemToSection error:', error);
+            }
+        }
+        
+        // 섹션 카운트 업데이트
+        async function updateSectionCounts() {
+            const sections = await getSections();
+            const data = await getAllMetadata();
+            
+            sections.forEach(section => {
+                const count = (data[section.id] || []).length;
+                const countEl = document.getElementById(`sectionCount-${section.id}`);
+                if (countEl) countEl.textContent = `(${count})`;
+                
+                const navCountEl = document.getElementById(`navCount-${section.id}`);
+                if (navCountEl) navCountEl.textContent = count;
+            });
+            
+            // 전체 카운트 업데이트
+            const totalCount = sections.reduce((sum, s) => sum + (data[s.id] || []).length, 0);
+            const totalNavCount = document.querySelector('.nav-tab[data-filter="all"] .nav-count');
+            if (totalNavCount) totalNavCount.textContent = totalCount;
         }
         
         async function saveNewOrder(category) {
@@ -2164,14 +2240,70 @@
                         </div>
                         <button class="section-edit-btn" onclick="openSectionModal('${section.id}')">⚙️</button>
                     </div>
-                    <div class="portfolio-grid" id="grid-${section.id}">
-                        <div class="add-card" onclick="openAddModal('${section.id}')">
+                    <div class="portfolio-grid" id="grid-${section.id}" data-category="${section.id}">
+                        <div class="add-card" data-category="${section.id}" onclick="openAddModal('${section.id}')">
                             <div class="add-card-icon">+</div>
                             <div class="add-card-text">새 항목 추가</div>
                         </div>
                     </div>
                 </section>
             `).join('');
+            
+            // 그리드 드롭존 설정 (빈 섹션에 드롭 가능하도록)
+            setupGridDropZones();
+        }
+        
+        // 그리드 드롭존 설정
+        function setupGridDropZones() {
+            document.querySelectorAll('.portfolio-grid').forEach(grid => {
+                const category = grid.dataset.category;
+                
+                grid.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    if (!draggedItem || !isLoggedIn) return;
+                    grid.classList.add('drag-over-grid');
+                });
+                
+                grid.addEventListener('dragleave', (e) => {
+                    // 자식 요소로 이동할 때는 무시
+                    if (grid.contains(e.relatedTarget)) return;
+                    grid.classList.remove('drag-over-grid');
+                });
+                
+                grid.addEventListener('drop', async (e) => {
+                    e.preventDefault();
+                    grid.classList.remove('drag-over-grid');
+                    
+                    if (!draggedItem || !isLoggedIn) return;
+                    
+                    // 카드 위에 드롭된 경우는 카드의 drop 이벤트에서 처리
+                    if (e.target.closest('.portfolio-card')) return;
+                    
+                    const sourceCategory = draggedItem.category;
+                    const targetCategory = category;
+                    const addCard = grid.querySelector('.add-card');
+                    
+                    // 카드를 add-card 앞에 추가
+                    if (addCard) {
+                        addCard.before(draggedItem.element);
+                    } else {
+                        grid.appendChild(draggedItem.element);
+                    }
+                    
+                    // 다른 섹션으로 이동한 경우
+                    if (sourceCategory !== targetCategory) {
+                        draggedItem.element.dataset.category = targetCategory;
+                        await moveItemToSection(draggedItem.itemId, sourceCategory, targetCategory);
+                    }
+                    
+                    // 순서 저장
+                    if (sourceCategory !== targetCategory) {
+                        await saveNewOrder(sourceCategory);
+                    }
+                    await saveNewOrder(targetCategory);
+                    await updateSectionCounts();
+                });
+            });
         }
 
         async function renderAllSections() {
@@ -2210,6 +2342,7 @@
             const card = document.createElement('div');
             card.className = 'portfolio-card';
             card.dataset.itemId = item.id;
+            card.dataset.category = category;
             card.dataset.hasThumbnail = item.hasThumbnail ? 'true' : 'false';
             
             card.innerHTML = `
