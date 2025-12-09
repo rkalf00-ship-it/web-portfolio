@@ -997,7 +997,7 @@
         <footer>
             <div class="contact-title">CONTACT</div>
             <div class="contact-links">
-                <a href="/cdn-cgi/l/email-protection#641d0b11164a0109050d0824011c05091408014a070b09" class="contact-link">✉️ Email : vpfflrtm0089@naver.com </a>
+                <a href="mailto:your-email@example.com" class="contact-link">✉️ Email : your-email@example.com </a>
                 <!-- 이후에 수정 예정
                 <a href="#" class="contact-link">💻 GitHub</a>
                 <a href="#" class="contact-link">💼 LinkedIn</a> -->
@@ -1171,7 +1171,62 @@
             </div>
             <div class="form-error" id="settingsError"></div>
             <button class="form-btn primary" onclick="changePassword()">변경 저장</button>
+            
+            <!-- 데이터 백업/복원 섹션 -->
+            <div style="border-top: 1px solid var(--border-light); margin-top: 20px; padding-top: 20px;">
+                <label class="form-label" style="font-size: 0.95rem; color: var(--text-dark); margin-bottom: 12px;">📦 데이터 백업/복원</label>
+                <p style="font-size: 0.8rem; color: var(--text-light); margin-bottom: 12px; line-height: 1.5;">
+                    다른 기기에서 사용하려면 데이터를 백업하여 복원하세요.<br>
+                    <strong>독립형 HTML</strong>을 다운로드하면 데이터가 포함된 파일을 받을 수 있습니다.
+                </p>
+                <button class="form-btn" style="background: var(--pastel-blue-light); border: 1px solid var(--pastel-blue); color: var(--text-dark); margin-bottom: 8px;" onclick="openModal('backupModal'); closeModal('settingsModal');">📦 백업/복원 열기</button>
+            </div>
+            
             <button class="form-btn secondary" onclick="closeModal('settingsModal')">취소</button>
+        </div>
+    </div>
+
+    <!-- 백업/복원 모달 -->
+    <div class="modal-overlay" id="backupModal">
+        <div class="modal" style="max-width: 520px;">
+            <h2 class="modal-title">📦 데이터 백업/복원</h2>
+            
+            <div style="background: var(--pastel-gold-light); border: 1px solid var(--pastel-gold); border-radius: 10px; padding: 12px; margin-bottom: 20px;">
+                <p style="font-size: 0.85rem; color: var(--text-dark); margin: 0; line-height: 1.5;">
+                    ⚠️ <strong>중요:</strong> 브라우저 로컬 저장소(IndexedDB)는 해당 기기에서만 유지됩니다.<br>
+                    다른 컴퓨터나 Netlify 배포 시 데이터를 유지하려면 아래 기능을 사용하세요.
+                </p>
+            </div>
+            
+            <!-- 내보내기 섹션 -->
+            <div class="form-group" style="border: 1px solid var(--border-light); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+                <label class="form-label" style="font-size: 0.95rem; color: var(--pastel-blue-dark); margin-bottom: 10px;">📤 데이터 내보내기</label>
+                <p style="font-size: 0.8rem; color: var(--text-light); margin-bottom: 12px;">현재 저장된 모든 데이터를 JSON 파일로 다운로드합니다.</p>
+                <button class="form-btn" style="background: linear-gradient(135deg, var(--pastel-blue), var(--pastel-blue-light)); color: var(--text-dark);" onclick="exportAllData()">📥 JSON 백업 다운로드</button>
+            </div>
+            
+            <!-- 가져오기 섹션 -->
+            <div class="form-group" style="border: 1px solid var(--border-light); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+                <label class="form-label" style="font-size: 0.95rem; color: var(--pastel-green-dark); margin-bottom: 10px;">📥 데이터 가져오기</label>
+                <p style="font-size: 0.8rem; color: var(--text-light); margin-bottom: 12px;">백업 JSON 파일을 선택하여 데이터를 복원합니다.</p>
+                <input type="file" id="backupFileInput" accept=".json" style="display: none;" onchange="importAllData(event)">
+                <button class="form-btn" style="background: linear-gradient(135deg, var(--pastel-green), var(--pastel-green-light)); color: var(--text-dark);" onclick="document.getElementById('backupFileInput').click()">📤 JSON 파일 선택 및 복원</button>
+            </div>
+            
+            <!-- 독립형 HTML 다운로드 섹션 -->
+            <div class="form-group" style="border: 1px solid var(--pastel-purple); border-radius: 12px; padding: 16px; background: var(--pastel-purple-light); margin-bottom: 16px;">
+                <label class="form-label" style="font-size: 0.95rem; color: var(--pastel-purple-dark); margin-bottom: 10px;">🌐 독립형 HTML 다운로드 (추천)</label>
+                <p style="font-size: 0.8rem; color: var(--text-dark); margin-bottom: 12px;">
+                    <strong>Netlify 배포용!</strong><br>
+                    현재 데이터가 모두 포함된 HTML 파일을 다운로드합니다.<br>
+                    이 파일을 Netlify에 업로드하면 모든 데이터가 보존됩니다.
+                </p>
+                <button class="form-btn" style="background: linear-gradient(135deg, var(--pastel-purple), var(--pastel-purple-light)); color: var(--text-dark);" onclick="downloadStandaloneHTML()">🚀 데이터 포함 HTML 다운로드</button>
+            </div>
+            
+            <div id="backupStatus" style="display: none; padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 0.85rem;"></div>
+            
+            <button class="form-btn secondary" onclick="closeModal('backupModal')">닫기</button>
         </div>
     </div>
 
@@ -1286,7 +1341,7 @@
         </div>
     </div>
 
-    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    <script>
         // ============ IndexedDB 설정 ============
         const DB_NAME = 'PortfolioDB';
         const DB_VERSION = 2;
@@ -2668,6 +2723,239 @@
             });
         }
 
+        // ============ 백업/복원 기능 ============
+        
+        // 모든 데이터를 JSON으로 내보내기
+        async function exportAllData() {
+            try {
+                showBackupStatus('데이터 수집 중...', 'info');
+                
+                const exportData = {
+                    version: '1.0',
+                    exportDate: new Date().toISOString(),
+                    auth: await getAuth(),
+                    profile: await getProfile(),
+                    intro: await getIntro(),
+                    sections: await getSections(),
+                    metadata: await getAllMetadataRaw(),
+                    files: await getAllFiles()
+                };
+                
+                const jsonString = JSON.stringify(exportData, null, 2);
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `portfolio_backup_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showBackupStatus('✅ 백업 파일이 다운로드되었습니다!', 'success');
+            } catch (error) {
+                console.error('Export error:', error);
+                showBackupStatus('❌ 백업 중 오류가 발생했습니다: ' + error.message, 'error');
+            }
+        }
+        
+        // 메타데이터 직접 가져오기 (raw)
+        async function getAllMetadataRaw() {
+            return new Promise((resolve) => {
+                const store = getStore(STORES.META);
+                const request = store.getAll();
+                request.onsuccess = () => resolve(request.result || []);
+                request.onerror = () => resolve([]);
+            });
+        }
+        
+        // 모든 파일 가져오기
+        async function getAllFiles() {
+            return new Promise((resolve) => {
+                const store = getStore(STORES.FILES);
+                const request = store.getAll();
+                request.onsuccess = () => resolve(request.result || []);
+                request.onerror = () => resolve([]);
+            });
+        }
+        
+        // JSON에서 데이터 가져오기
+        async function importAllData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            try {
+                showBackupStatus('파일 읽는 중...', 'info');
+                
+                const text = await file.text();
+                const data = JSON.parse(text);
+                
+                if (!data.version) {
+                    throw new Error('유효하지 않은 백업 파일입니다.');
+                }
+                
+                const confirmMsg = `이 작업은 현재 데이터를 모두 덮어씁니다.\n\n백업 날짜: ${data.exportDate}\n\n계속하시겠습니까?`;
+                if (!confirm(confirmMsg)) {
+                    showBackupStatus('복원이 취소되었습니다.', 'info');
+                    event.target.value = '';
+                    return;
+                }
+                
+                showBackupStatus('데이터 복원 중...', 'info');
+                
+                // 인증 정보 복원
+                if (data.auth) {
+                    await setAuth(data.auth.password, data.auth.hint);
+                }
+                
+                // 프로필 복원
+                if (data.profile) {
+                    await saveProfileData(data.profile);
+                }
+                
+                // 자기소개 복원
+                if (data.intro) {
+                    await saveIntroData(data.intro);
+                }
+                
+                // 섹션 복원
+                if (data.sections && data.sections.length > 0) {
+                    // 기존 섹션 삭제
+                    const existingSections = await getSections();
+                    for (const section of existingSections) {
+                        await deleteSectionData(section.id);
+                    }
+                    // 새 섹션 저장
+                    for (const section of data.sections) {
+                        await saveSectionData(section);
+                    }
+                }
+                
+                // 메타데이터 복원
+                if (data.metadata && data.metadata.length > 0) {
+                    for (const item of data.metadata) {
+                        await saveMetadata(item);
+                    }
+                }
+                
+                // 파일 복원
+                if (data.files && data.files.length > 0) {
+                    for (const file of data.files) {
+                        await saveFile(file.id, file.data);
+                    }
+                }
+                
+                showBackupStatus('✅ 데이터가 성공적으로 복원되었습니다! 페이지를 새로고침합니다...', 'success');
+                
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+                
+            } catch (error) {
+                console.error('Import error:', error);
+                showBackupStatus('❌ 복원 중 오류가 발생했습니다: ' + error.message, 'error');
+            }
+            
+            event.target.value = '';
+        }
+        
+        // 데이터가 포함된 독립형 HTML 다운로드
+        async function downloadStandaloneHTML() {
+            try {
+                showBackupStatus('HTML 파일 생성 중... (대용량 파일은 시간이 걸릴 수 있습니다)', 'info');
+                
+                // 현재 페이지의 HTML 가져오기
+                let htmlContent = document.documentElement.outerHTML;
+                
+                // 데이터 수집
+                const exportData = {
+                    version: '1.0',
+                    exportDate: new Date().toISOString(),
+                    auth: await getAuth(),
+                    profile: await getProfile(),
+                    intro: await getIntro(),
+                    sections: await getSections(),
+                    metadata: await getAllMetadataRaw(),
+                    files: await getAllFiles()
+                };
+                
+                // 초기화 데이터를 삽입할 스크립트 생성 (문자열 연결 방식)
+                const scriptOpen = '<' + 'script>';
+                const scriptClose = '</' + 'script>';
+                const bodyClose = '</' + 'body>';
+                
+                const initDataScript = '\n' + scriptOpen + '\n' +
+                    '// 임베딩된 초기 데이터 (자동 생성됨)\n' +
+                    'const EMBEDDED_DATA = ' + JSON.stringify(exportData) + ';\n\n' +
+                    '// IndexedDB 초기화 시 임베딩된 데이터 로드\n' +
+                    'const originalInitDB = initDB;\n' +
+                    'initDB = async function() {\n' +
+                    '    await originalInitDB();\n' +
+                    '    const existingAuth = await getAuth();\n' +
+                    '    if (!existingAuth && EMBEDDED_DATA.auth) {\n' +
+                    '        console.log("Loading embedded data...");\n' +
+                    '        if (EMBEDDED_DATA.auth) { await setAuth(EMBEDDED_DATA.auth.password, EMBEDDED_DATA.auth.hint); }\n' +
+                    '        if (EMBEDDED_DATA.profile) { await saveProfileData(EMBEDDED_DATA.profile); }\n' +
+                    '        if (EMBEDDED_DATA.intro) { await saveIntroData(EMBEDDED_DATA.intro); }\n' +
+                    '        if (EMBEDDED_DATA.sections) { for (const s of EMBEDDED_DATA.sections) { await saveSectionData(s); } }\n' +
+                    '        if (EMBEDDED_DATA.metadata) { for (const m of EMBEDDED_DATA.metadata) { await saveMetadata(m); } }\n' +
+                    '        if (EMBEDDED_DATA.files) { for (const f of EMBEDDED_DATA.files) { await saveFile(f.id, f.data); } }\n' +
+                    '        console.log("Embedded data loaded successfully!");\n' +
+                    '    }\n' +
+                    '};\n' +
+                    scriptClose + '\n' + bodyClose;
+                
+                // </body> 태그 앞에 스크립트 삽입
+                htmlContent = htmlContent.replace(/<\/body>/i, initDataScript);
+                
+                // DOCTYPE 추가
+                const fullHTML = '<!DOCTYPE html>\n' + htmlContent;
+                
+                // 파일 다운로드
+                const blob = new Blob([fullHTML], { type: 'text/html;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'portfolio_standalone_' + new Date().toISOString().split('T')[0] + '.html';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showBackupStatus('✅ 독립형 HTML이 다운로드되었습니다! 이 파일을 Netlify에 업로드하세요.', 'success');
+                
+            } catch (error) {
+                console.error('HTML export error:', error);
+                showBackupStatus('❌ HTML 생성 중 오류가 발생했습니다: ' + error.message, 'error');
+            }
+        }
+        
+        // 백업 상태 표시
+        function showBackupStatus(message, type) {
+            const statusEl = document.getElementById('backupStatus');
+            statusEl.style.display = 'block';
+            statusEl.textContent = message;
+            
+            switch(type) {
+                case 'success':
+                    statusEl.style.background = 'var(--pastel-green-light)';
+                    statusEl.style.color = 'var(--pastel-green-dark)';
+                    statusEl.style.border = '1px solid var(--pastel-green)';
+                    break;
+                case 'error':
+                    statusEl.style.background = 'var(--pastel-red-light)';
+                    statusEl.style.color = 'var(--pastel-red-dark)';
+                    statusEl.style.border = '1px solid var(--pastel-red)';
+                    break;
+                default:
+                    statusEl.style.background = 'var(--pastel-blue-light)';
+                    statusEl.style.color = 'var(--pastel-blue-dark)';
+                    statusEl.style.border = '1px solid var(--pastel-blue)';
+            }
+        }
+
         // 초기화
         async function init() {
             await initDB();
@@ -2678,10 +2966,24 @@
             await renderAllSections();
             setupEventListeners();
             updateUI();
-            updateLoginUI();
+            updateStorageInfo();
         }
 
-        init();
+        async function updateStorageInfo() {
+            if (!isLoggedIn) return;
+            
+            try {
+                const estimate = await navigator.storage.estimate();
+                const usedMB = (estimate.usage / (1024 * 1024)).toFixed(2);
+                document.getElementById('storageUsed').textContent = usedMB + ' MB';
+                document.getElementById('storageInfo').classList.add('show');
+            } catch (e) {
+                console.log('Storage estimate not supported');
+            }
+        }
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
