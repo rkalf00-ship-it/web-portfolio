@@ -688,6 +688,44 @@
             margin-bottom: 24px;
             padding-bottom: 14px;
             border-bottom: 2px solid var(--border-light);
+            position: relative;
+        }
+
+        /* 섹션 드래그 핸들 */
+        .section-drag-handle {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: var(--bg-section);
+            border: 1px solid var(--border-light);
+            cursor: grab;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: var(--text-mid);
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+
+        .section-drag-handle:active { cursor: grabbing; }
+        .section-drag-handle.show { display: flex; }
+        .section-drag-handle:hover { 
+            background: var(--pastel-blue-light); 
+            border-color: var(--pastel-blue);
+            transform: scale(1.05);
+        }
+
+        /* 섹션 드래그 중 스타일 */
+        .section.dragging {
+            opacity: 0.5;
+            transform: scale(0.98);
+        }
+
+        .section.drag-over-section {
+            border-top: 3px solid var(--pastel-blue);
+            padding-top: 10px;
+            margin-top: -3px;
         }
 
         .section-icon {
@@ -860,6 +898,11 @@
             color: var(--text-dark);
             margin-bottom: 8px;
             line-height: 1.4;
+            min-height: 2.8em;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
         .card-description {
@@ -895,6 +938,31 @@
             padding-top: 40px;
             border-top: 1px solid var(--border-light);
             text-align: center;
+            position: relative;
+        }
+
+        .footer-edit-btn-wrap {
+            position: absolute;
+            top: 10px;
+            right: 0;
+        }
+
+        .footer-edit-btn {
+            padding: 6px 14px;
+            border: 1px solid var(--border-light);
+            border-radius: 15px;
+            background: var(--bg-section);
+            color: var(--text-mid);
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: none;
+            transition: all 0.2s;
+        }
+
+        .footer-edit-btn.show { display: inline-block; }
+        .footer-edit-btn:hover { 
+            border-color: var(--pastel-gold); 
+            background: var(--pastel-gold-light); 
         }
 
         .contact-title {
@@ -1009,19 +1077,50 @@
             <span>+ 새 섹션 추가</span>
         </div>
 
-        <footer>
-            <div class="contact-title">CONTACT</div>
-            <div class="contact-links">
-                <a href="/cdn-cgi/l/email-protection#027b6d77702f676f636b6e42677a636f726e672c616d6f" class="contact-link">✉️ Email : <span class="__cf_email__" data-cfemail="bbc2d4cec996ded6dad2d7fbdec3dad6cbd7de95d8d4d6">[email&#160;protected]</span> </a>
-                <!-- 이후에 수정 예정
-                <a href="#" class="contact-link">💻 GitHub</a>
-                <a href="#" class="contact-link">💼 LinkedIn</a> -->
+        <footer id="footerSection">
+            <div class="footer-edit-btn-wrap">
+                <button class="footer-edit-btn" id="footerEditBtn" onclick="openFooterModal()">✏️ 수정</button>
             </div>
-            <p class="copyright">© 2026 게임 기획자 김재엽 포트폴리오</p>
+            <div class="contact-title" id="contactTitle">CONTACT</div>
+            <div class="contact-links" id="contactLinks">
+                <a href="/cdn-cgi/l/email-protection#50293f25227d353d31393c103528313d203c357e333f3d" class="contact-link" id="contactEmail">✉️ Email : <span class="__cf_email__" data-cfemail="0b72647e79266e666a62674b6e736a667b676e25686466">[email&#160;protected]</span></a>
+                <a href="#" class="contact-link" id="contactGithub" style="display: none;">💻 GitHub</a>
+                <a href="#" class="contact-link" id="contactLinkedin" style="display: none;">💼 LinkedIn</a>
+            </div>
+            <p class="copyright" id="copyrightText">© 2026 게임 기획자 포트폴리오</p>
         </footer>
     </div>
 
     <div class="storage-info" id="storageInfo">💾 사용 중: <span id="storageUsed">0 MB</span></div>
+
+    <!-- Footer 수정 모달 -->
+    <div class="modal-overlay" id="footerModal">
+        <div class="modal">
+            <h2 class="modal-title">📞 Contact & Copyright 수정</h2>
+            <div class="form-group">
+                <label class="form-label">Contact 제목</label>
+                <input type="text" class="form-input" id="footerContactTitle" placeholder="CONTACT">
+            </div>
+            <div class="form-group">
+                <label class="form-label">이메일</label>
+                <input type="email" class="form-input" id="footerEmail" placeholder="your-email@example.com">
+            </div>
+            <div class="form-group">
+                <label class="form-label">GitHub URL (비워두면 숨김)</label>
+                <input type="url" class="form-input" id="footerGithub" placeholder="https://github.com/username">
+            </div>
+            <div class="form-group">
+                <label class="form-label">LinkedIn URL (비워두면 숨김)</label>
+                <input type="url" class="form-input" id="footerLinkedin" placeholder="https://linkedin.com/in/username">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Copyright 문구</label>
+                <input type="text" class="form-input" id="footerCopyright" placeholder="© 2026 포트폴리오">
+            </div>
+            <button class="form-btn primary" onclick="saveFooter()">저장</button>
+            <button class="form-btn secondary" onclick="closeModal('footerModal')">취소</button>
+        </div>
+    </div>
 
     <!-- 프로필 수정 모달 -->
     <div class="modal-overlay" id="profileModal">
@@ -1297,6 +1396,22 @@
                     <input type="text" class="tag-input" id="editTagInput" placeholder="키워드 입력 후 Enter">
                 </div>
             </div>
+            <div class="form-group">
+                <label class="form-label">첨부 파일</label>
+                <div class="current-file-info" id="editCurrentFile" style="margin-bottom: 10px; padding: 10px; background: var(--bg-section); border-radius: 8px; font-size: 0.85rem; display: none;">
+                    <span>📎 현재 파일: </span><span id="editCurrentFileName"></span>
+                </div>
+                <div class="file-upload-area" id="editFileUploadArea" onclick="document.getElementById('editFileInput').click()">
+                    <div class="file-upload-icon">📁</div>
+                    <div class="file-upload-text">클릭하여 새 파일 선택 (변경 시에만)</div>
+                    <div class="file-upload-hint">최대 10MB</div>
+                </div>
+                <input type="file" id="editFileInput" style="display: none;" onchange="handleEditFileSelect(event)">
+                <div class="new-file-info" id="editNewFileInfo" style="margin-top: 10px; padding: 10px; background: var(--pastel-green-light); border: 1px solid var(--pastel-green); border-radius: 8px; font-size: 0.85rem; display: none;">
+                    <span>✅ 새 파일: </span><span id="editNewFileName"></span>
+                    <button type="button" onclick="cancelEditFile()" style="margin-left: 10px; padding: 2px 8px; border: none; background: var(--pastel-red); border-radius: 4px; cursor: pointer; font-size: 0.75rem;">취소</button>
+                </div>
+            </div>
             <div class="form-error" id="editError"></div>
             <button class="form-btn primary" onclick="updateItem()">수정 저장</button>
             <button class="form-btn danger" onclick="deleteItem()">삭제</button>
@@ -1306,7 +1421,7 @@
 
 
     <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
     <script>
@@ -1857,6 +1972,20 @@
                     }
                 }
 
+                // 파일 변경 처리
+                if (editNewFile) {
+                    const reader = new FileReader();
+                    const fileData = await new Promise((resolve, reject) => {
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(editNewFile);
+                    });
+                    
+                    await saveFile(itemId, fileData);
+                    item.fileName = editNewFile.name;
+                    item.fileType = getFileType(editNewFile.name);
+                }
+
                 await saveMetadata(item);
                 
                 closeModal('editModal');
@@ -1907,6 +2036,10 @@
             editThumbnail = null;
             editThumbnailChanged = false;
             editThumbnailRemoved = false;
+            editNewFile = null;
+            document.getElementById('editFileInput').value = '';
+            document.getElementById('editNewFileInfo').style.display = 'none';
+            document.getElementById('editCurrentFile').style.display = 'none';
         }
 
         // ============ 프로필 관련 ============
@@ -2015,6 +2148,101 @@
             if (intro) {
                 document.getElementById('introContent').textContent = intro;
             }
+        }
+
+        // ============ Footer (Contact & Copyright) 관련 ============
+        async function getFooter() {
+            try {
+                const snapshot = await database.ref('footer/data').once('value');
+                return snapshot.val();
+            } catch (error) {
+                console.error('getFooter error:', error);
+                return null;
+            }
+        }
+
+        async function saveFooterData(data) {
+            try {
+                await database.ref('footer/data').set(data);
+            } catch (error) {
+                console.error('saveFooterData error:', error);
+            }
+        }
+
+        async function loadFooter() {
+            const footer = await getFooter();
+            if (footer) {
+                // Contact 제목
+                if (footer.contactTitle) {
+                    document.getElementById('contactTitle').textContent = footer.contactTitle;
+                }
+                
+                // 이메일
+                const emailEl = document.getElementById('contactEmail');
+                if (footer.email) {
+                    emailEl.href = 'mailto:' + footer.email;
+                    emailEl.innerHTML = '✉️ Email : ' + footer.email;
+                    emailEl.style.display = 'flex';
+                } else {
+                    emailEl.style.display = 'none';
+                }
+                
+                // GitHub
+                const githubEl = document.getElementById('contactGithub');
+                if (footer.github) {
+                    githubEl.href = footer.github;
+                    githubEl.style.display = 'flex';
+                } else {
+                    githubEl.style.display = 'none';
+                }
+                
+                // LinkedIn
+                const linkedinEl = document.getElementById('contactLinkedin');
+                if (footer.linkedin) {
+                    linkedinEl.href = footer.linkedin;
+                    linkedinEl.style.display = 'flex';
+                } else {
+                    linkedinEl.style.display = 'none';
+                }
+                
+                // Copyright
+                if (footer.copyright) {
+                    document.getElementById('copyrightText').textContent = footer.copyright;
+                }
+            }
+        }
+
+        function openFooterModal() {
+            getFooter().then(footer => {
+                if (footer) {
+                    document.getElementById('footerContactTitle').value = footer.contactTitle || 'CONTACT';
+                    document.getElementById('footerEmail').value = footer.email || '';
+                    document.getElementById('footerGithub').value = footer.github || '';
+                    document.getElementById('footerLinkedin').value = footer.linkedin || '';
+                    document.getElementById('footerCopyright').value = footer.copyright || '';
+                } else {
+                    document.getElementById('footerContactTitle').value = 'CONTACT';
+                    document.getElementById('footerEmail').value = '';
+                    document.getElementById('footerGithub').value = '';
+                    document.getElementById('footerLinkedin').value = '';
+                    document.getElementById('footerCopyright').value = '';
+                }
+            });
+            openModal('footerModal');
+        }
+
+        async function saveFooter() {
+            const data = {
+                contactTitle: document.getElementById('footerContactTitle').value.trim() || 'CONTACT',
+                email: document.getElementById('footerEmail').value.trim(),
+                github: document.getElementById('footerGithub').value.trim(),
+                linkedin: document.getElementById('footerLinkedin').value.trim(),
+                copyright: document.getElementById('footerCopyright').value.trim()
+            };
+            
+            await saveFooterData(data);
+            await loadFooter();
+            closeModal('footerModal');
         }
 
         // ============ 섹션 관련 ============
@@ -2297,10 +2525,11 @@
             // 섹션 렌더링
             const sectionsContainer = document.getElementById('sectionsContainer');
             sectionsContainer.innerHTML = sections.map(section => `
-                <section class="section" id="${section.id}">
+                <section class="section" id="${section.id}" data-section-id="${section.id}">
                     <div class="section-header">
+                        <div class="section-drag-handle ${isLoggedIn ? 'show' : ''}" title="드래그하여 섹션 순서 변경">☰</div>
                         <div class="section-icon ${section.color}">${section.icon}</div>
-                        <div>
+                        <div style="flex: 1;">
                             <h2 class="section-title">${section.title} <span class="count" id="sectionCount-${section.id}">(${(data[section.id] || []).length})</span></h2>
                             <p class="section-subtitle">${section.subtitle}</p>
                         </div>
@@ -2317,6 +2546,141 @@
             
             // 그리드 드롭존 설정 (빈 섹션에 드롭 가능하도록)
             setupGridDropZones();
+            
+            // 섹션 드래그 설정
+            setupSectionDragAndDrop();
+            
+            // UI 업데이트 (로그인 상태에 따른 버튼 표시)
+            updateUI();
+        }
+        
+        // 섹션 드래그앤드롭 설정
+        let draggedSection = null;
+        
+        function setupSectionDragAndDrop() {
+            document.querySelectorAll('.section').forEach(section => {
+                const handle = section.querySelector('.section-drag-handle');
+                if (!handle) return;
+                
+                const sectionId = section.dataset.sectionId;
+                
+                handle.addEventListener('mousedown', () => {
+                    if (isLoggedIn) {
+                        section.draggable = true;
+                    }
+                });
+                
+                section.addEventListener('dragstart', (e) => {
+                    if (!isLoggedIn) {
+                        e.preventDefault();
+                        return;
+                    }
+                    // 카드 드래그와 구분
+                    if (e.target.classList.contains('portfolio-card')) return;
+                    
+                    draggedSection = { element: section, sectionId };
+                    section.classList.add('dragging');
+                    e.dataTransfer.effectAllowed = 'move';
+                });
+                
+                section.addEventListener('dragend', () => {
+                    section.draggable = false;
+                    section.classList.remove('dragging');
+                    draggedSection = null;
+                    document.querySelectorAll('.drag-over-section').forEach(el => el.classList.remove('drag-over-section'));
+                });
+                
+                section.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    if (!draggedSection || !isLoggedIn) return;
+                    if (draggedSection.element === section) return;
+                    
+                    // 카드 드래그 중이면 무시
+                    if (draggedItem) return;
+                    
+                    section.classList.add('drag-over-section');
+                });
+                
+                section.addEventListener('dragleave', (e) => {
+                    if (section.contains(e.relatedTarget)) return;
+                    section.classList.remove('drag-over-section');
+                });
+                
+                section.addEventListener('drop', async (e) => {
+                    // 카드 드롭인 경우 무시 (그리드에서 처리)
+                    if (draggedItem) return;
+                    
+                    e.preventDefault();
+                    section.classList.remove('drag-over-section');
+                    
+                    if (!draggedSection || !isLoggedIn) return;
+                    if (draggedSection.element === section) return;
+                    
+                    const container = section.parentElement;
+                    const sections = Array.from(container.querySelectorAll('.section'));
+                    const draggedIndex = sections.indexOf(draggedSection.element);
+                    const dropIndex = sections.indexOf(section);
+                    
+                    if (draggedIndex < dropIndex) {
+                        section.after(draggedSection.element);
+                    } else {
+                        section.before(draggedSection.element);
+                    }
+                    
+                    await saveSectionOrder();
+                });
+            });
+        }
+        
+        // 섹션 순서 저장
+        async function saveSectionOrder() {
+            const container = document.getElementById('sectionsContainer');
+            const sectionElements = Array.from(container.querySelectorAll('.section'));
+            const sections = await getSections();
+            
+            for (let i = 0; i < sectionElements.length; i++) {
+                const sectionId = sectionElements[i].dataset.sectionId;
+                const section = sections.find(s => s.id === sectionId);
+                if (section) {
+                    section.order = i;
+                    await saveSectionData(section);
+                }
+            }
+            
+            // 네비게이션도 업데이트
+            await updateNavOrder();
+        }
+        
+        // 네비게이션 순서 업데이트
+        async function updateNavOrder() {
+            const sections = await getSections();
+            const data = await getAllMetadata();
+            const navContainer = document.getElementById('navTabs');
+            const totalCount = sections.reduce((sum, s) => sum + (data[s.id] || []).length, 0);
+            
+            navContainer.innerHTML = `
+                <a href="#" class="nav-tab ${currentFilter === 'all' ? 'active' : ''}" data-filter="all">
+                    📋 전체 <span class="nav-count">${totalCount}</span>
+                </a>
+                ${sections.map(section => `
+                    <a href="#${section.id}" class="nav-tab ${currentFilter === section.id ? 'active' : ''}" data-filter="${section.id}">
+                        ${section.icon} ${section.title.split(' ')[0]} 
+                        <span class="nav-count" id="navCount-${section.id}">${(data[section.id] || []).length}</span>
+                    </a>
+                `).join('')}
+            `;
+            
+            // 네비게이션 이벤트 재설정
+            navContainer.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const filter = this.dataset.filter;
+                    setFilter(filter);
+                    if (filter !== 'all') {
+                        document.getElementById(filter)?.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            });
         }
         
         // 그리드 드롭존 설정
@@ -2684,7 +3048,46 @@
                 document.getElementById('editThumbnailRemoveBtn').style.display = 'none';
             }
 
+            // 현재 파일 정보 표시
+            editNewFile = null;
+            const currentFileEl = document.getElementById('editCurrentFile');
+            const currentFileNameEl = document.getElementById('editCurrentFileName');
+            const newFileInfoEl = document.getElementById('editNewFileInfo');
+            
+            if (item.fileName) {
+                currentFileNameEl.textContent = item.fileName;
+                currentFileEl.style.display = 'block';
+            } else {
+                currentFileEl.style.display = 'none';
+            }
+            newFileInfoEl.style.display = 'none';
+
             openModal('editModal');
+        }
+
+        // 수정 모달 파일 선택 처리
+        let editNewFile = null;
+        
+        function handleEditFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const maxSize = 10 * 1024 * 1024; // 10MB
+            if (file.size > maxSize) {
+                alert('파일 크기는 10MB 이하여야 합니다.');
+                event.target.value = '';
+                return;
+            }
+            
+            editNewFile = file;
+            document.getElementById('editNewFileName').textContent = file.name;
+            document.getElementById('editNewFileInfo').style.display = 'block';
+        }
+        
+        function cancelEditFile() {
+            editNewFile = null;
+            document.getElementById('editFileInput').value = '';
+            document.getElementById('editNewFileInfo').style.display = 'none';
         }
 
         function updateUI() {
@@ -2697,7 +3100,13 @@
             document.querySelectorAll('.drag-handle').forEach(handle => {
                 handle.classList.toggle('show', isLoggedIn);
             });
+            document.querySelectorAll('.section-drag-handle').forEach(handle => {
+                handle.classList.toggle('show', isLoggedIn);
+            });
             document.querySelectorAll('.section-edit-btn').forEach(btn => {
+                btn.classList.toggle('show', isLoggedIn);
+            });
+            document.querySelectorAll('.footer-edit-btn').forEach(btn => {
                 btn.classList.toggle('show', isLoggedIn);
             });
             updateSectionVisibility();
@@ -2724,6 +3133,26 @@
                 e.preventDefault();
                 uploadArea.classList.remove('dragover');
                 if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+            });
+
+            // 수정 모달 파일 업로드 드래그앤드롭
+            const editUploadArea = document.getElementById('editFileUploadArea');
+            editUploadArea.addEventListener('dragover', (e) => { e.preventDefault(); editUploadArea.classList.add('dragover'); });
+            editUploadArea.addEventListener('dragleave', () => editUploadArea.classList.remove('dragover'));
+            editUploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                editUploadArea.classList.remove('dragover');
+                if (e.dataTransfer.files.length) {
+                    const file = e.dataTransfer.files[0];
+                    const maxSize = 10 * 1024 * 1024;
+                    if (file.size > maxSize) {
+                        alert('파일 크기는 10MB 이하여야 합니다.');
+                        return;
+                    }
+                    editNewFile = file;
+                    document.getElementById('editNewFileName').textContent = file.name;
+                    document.getElementById('editNewFileInfo').style.display = 'block';
+                }
             });
 
             // 썸네일 클립보드 붙여넣기 이벤트 (새 항목 추가)
@@ -2776,6 +3205,7 @@
                 checkSession();
                 await loadProfile();
                 await loadIntro();
+                await loadFooter();
                 await renderSectionsAndNav();
                 await renderAllSections();
                 setupEventListeners();
@@ -2784,7 +3214,6 @@
                 console.log('Portfolio loaded successfully with Firebase!');
             } catch (error) {
                 console.error('Init error:', error);
-                alert('데이터를 불러오는 중 오류가 발생했습니다. Firebase 연결을 확인해주세요.');
             }
         }
 
