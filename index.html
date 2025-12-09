@@ -1,0 +1,2686 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게임 기획자 포트폴리오</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #f8f6f4;
+            --bg-card: #ffffff;
+            --bg-section: #fafafa;
+            --pastel-gold: #e8d5a3;
+            --pastel-gold-light: #f5e6c3;
+            --pastel-gold-dark: #c9a86c;
+            --pastel-blue: #a8c5e2;
+            --pastel-blue-light: #c5daef;
+            --pastel-blue-dark: #7ba3c9;
+            --pastel-red: #e8a8a8;
+            --pastel-red-light: #f2c5c5;
+            --pastel-red-dark: #c98a8a;
+            --pastel-green: #a8d8b4;
+            --pastel-green-light: #c5e8ce;
+            --pastel-green-dark: #7cb88e;
+            --pastel-purple: #c5a8d8;
+            --pastel-purple-light: #dac5e8;
+            --pastel-purple-dark: #a87bc2;
+            --pastel-pink: #e8b8c8;
+            --pastel-mint: #a8d8d8;
+            --text-dark: #4a4a4a;
+            --text-mid: #6a6a6a;
+            --text-light: #9a9a9a;
+            --border-light: #e8e8e8;
+            --border-mid: #d0d0d0;
+            --shadow-soft: rgba(0, 0, 0, 0.06);
+            --shadow-mid: rgba(0, 0, 0, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #f5f3f0 0%, #ebe7e3 100%);
+            min-height: 100vh;
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 60px 24px;
+        }
+
+        /* 상단 로그인 바 */
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 0 24px;
+            z-index: 100;
+            box-shadow: 0 2px 10px var(--shadow-soft);
+        }
+
+        .login-btn, .logout-btn, .settings-btn {
+            padding: 8px 18px;
+            border: 1px solid var(--border-light);
+            border-radius: 20px;
+            background: var(--bg-section);
+            color: var(--text-mid);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: 10px;
+        }
+
+        .login-btn:hover, .settings-btn:hover { 
+            border-color: var(--pastel-gold); 
+            background: var(--pastel-gold-light); 
+        }
+
+        .logout-btn:hover { 
+            border-color: var(--pastel-red); 
+            background: var(--pastel-red-light); 
+        }
+
+        .logged-in-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--pastel-green-dark);
+            font-size: 0.85rem;
+            margin-right: 10px;
+        }
+
+        .logged-in-indicator::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--pastel-green);
+            border-radius: 50%;
+        }
+
+        body { padding-top: 50px; }
+
+        /* 모달 스타일 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 480px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+        .modal-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.4rem;
+            color: var(--pastel-gold-dark);
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .form-group { margin-bottom: 20px; }
+
+        .form-label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-mid);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            background: var(--bg-section);
+            color: var(--text-dark);
+            transition: all 0.2s;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--pastel-gold);
+            background: var(--bg-card);
+        }
+
+        .form-textarea { min-height: 100px; resize: vertical; }
+
+        .form-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+
+        .form-btn.primary {
+            background: linear-gradient(135deg, var(--pastel-gold), var(--pastel-gold-light));
+            color: var(--text-dark);
+        }
+
+        .form-btn.primary:hover { box-shadow: 0 4px 15px rgba(232, 213, 163, 0.4); }
+        .form-btn.primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .form-btn.secondary {
+            background: var(--bg-section);
+            border: 1px solid var(--border-light);
+            color: var(--text-mid);
+        }
+
+        .form-btn.danger {
+            background: linear-gradient(135deg, var(--pastel-red), var(--pastel-red-light));
+            color: var(--text-dark);
+        }
+
+        .form-link {
+            display: block;
+            text-align: center;
+            margin-top: 16px;
+            color: var(--pastel-blue-dark);
+            font-size: 0.85rem;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .form-error {
+            color: var(--pastel-red-dark);
+            font-size: 0.8rem;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .form-error.show { display: block; }
+
+        /* 파일 업로드 */
+        .file-upload-area {
+            border: 2px dashed var(--border-light);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--bg-section);
+        }
+
+        .file-upload-area:hover {
+            border-color: var(--pastel-gold);
+            background: var(--pastel-gold-light);
+        }
+
+        .file-upload-area.dragover {
+            border-color: var(--pastel-blue);
+            background: var(--pastel-blue-light);
+        }
+
+        .file-upload-icon { font-size: 2.5rem; margin-bottom: 10px; }
+        .file-upload-text { color: var(--text-mid); font-size: 0.9rem; }
+        .file-upload-hint { color: var(--text-light); font-size: 0.8rem; margin-top: 8px; }
+
+        .file-preview {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: var(--bg-section);
+            border-radius: 10px;
+            margin-top: 12px;
+        }
+
+        .file-preview.show { display: flex; }
+        .file-preview-icon { font-size: 1.5rem; }
+        .file-preview-info { flex: 1; }
+        .file-preview-name { font-size: 0.85rem; color: var(--text-dark); word-break: break-all; }
+        .file-preview-size { font-size: 0.75rem; color: var(--text-light); }
+        .file-preview-remove {
+            width: 24px; height: 24px;
+            border: none; background: var(--pastel-red-light);
+            border-radius: 50%; cursor: pointer; color: var(--pastel-red-dark);
+        }
+
+        /* 썸네일 업로드 */
+        .thumbnail-upload-area {
+            width: 100%;
+            height: 120px;
+            border: 2px dashed var(--border-light);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--bg-section);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .thumbnail-upload-area:hover {
+            border-color: var(--pastel-gold);
+            background: var(--pastel-gold-light);
+        }
+
+        .thumbnail-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-light);
+            font-size: 0.85rem;
+        }
+
+        .thumbnail-placeholder span:first-child {
+            font-size: 2rem;
+        }
+
+        .thumbnail-preview-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .thumbnail-remove-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: rgba(232, 168, 168, 0.9);
+            border-radius: 50%;
+            cursor: pointer;
+            color: var(--pastel-red-dark);
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .thumbnail-remove-btn:hover {
+            background: var(--pastel-red);
+        }
+
+        /* 업로드 진행 바 */
+        .upload-progress {
+            display: none;
+            margin-top: 12px;
+        }
+
+        .upload-progress.show { display: block; }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border-light);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--pastel-gold), var(--pastel-gold-light));
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            text-align: center;
+            margin-top: 6px;
+        }
+
+        /* 키워드 태그 입력 */
+        .tags-input-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 10px;
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+            background: var(--bg-section);
+            min-height: 50px;
+        }
+
+        .tag-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            background: var(--pastel-gold-light);
+            border-radius: 15px;
+            font-size: 0.8rem;
+            color: var(--text-dark);
+        }
+
+        .tag-remove {
+            width: 16px; height: 16px;
+            border: none; background: transparent;
+            cursor: pointer; font-size: 0.9rem; color: var(--text-mid);
+        }
+
+        .tag-input {
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 0.85rem;
+            min-width: 100px;
+            flex: 1;
+        }
+
+        /* 헤더 */
+        header { text-align: center; margin-bottom: 60px; }
+
+        .profile-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .profile-image {
+            min-width: 120px;
+            min-height: 120px;
+            max-width: 200px;
+            max-height: 260px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--pastel-gold-light), var(--pastel-gold));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            box-shadow: 0 8px 30px var(--shadow-mid);
+            border: 4px solid var(--bg-card);
+            position: relative;
+            overflow: hidden;
+            cursor: default;
+        }
+
+        .profile-image.has-image {
+            width: auto;
+            height: auto;
+        }
+
+        .profile-image.editable { cursor: pointer; }
+
+        .profile-edit-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            border-radius: 12px;
+        }
+
+        .profile-image.editable:hover .profile-edit-overlay { display: flex; }
+
+        .intro-text {
+            max-width: 700px;
+            margin: 30px auto 0;
+            padding: 24px 32px;
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid var(--border-light);
+            box-shadow: 0 4px 20px var(--shadow-soft);
+            font-size: 0.95rem;
+            color: var(--text-mid);
+            line-height: 1.8;
+            position: relative;
+            cursor: default;
+            transition: all 0.2s;
+        }
+
+        .intro-text.editable { cursor: pointer; }
+        .intro-text.editable:hover { border-color: var(--pastel-gold); }
+
+        .intro-edit-overlay {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(232, 213, 163, 0.95);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: var(--text-dark);
+            display: none;
+            font-weight: 500;
+        }
+
+        .intro-text.editable:hover .intro-edit-overlay { display: block; }
+        .intro-text.editable:hover #introContent { opacity: 0.3; }
+
+        /* 드래그앤드롭 */
+        .portfolio-card.dragging {
+            opacity: 0.5;
+            transform: scale(1.02);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .portfolio-card.drag-over {
+            border: 2px dashed var(--pastel-gold);
+            background: var(--pastel-gold-light);
+        }
+
+        .drag-handle {
+            position: absolute;
+            top: 12px;
+            right: 48px;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.9);
+            border: 1px solid var(--border-light);
+            cursor: grab;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: var(--text-mid);
+            z-index: 10;
+        }
+
+        .drag-handle:active { cursor: grabbing; }
+        .drag-handle.show { display: flex; }
+        .drag-handle:hover { background: var(--pastel-blue-light); border-color: var(--pastel-blue); }
+
+        /* 섹션 추가 버튼 */
+        .add-section-btn {
+            display: none;
+            margin: 30px auto;
+            padding: 16px 32px;
+            background: var(--bg-card);
+            border: 2px dashed var(--border-light);
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            max-width: 300px;
+        }
+
+        .add-section-btn.show { display: block; }
+
+        .add-section-btn:hover {
+            border-color: var(--pastel-gold);
+            background: var(--pastel-gold-light);
+            color: var(--text-dark);
+        }
+
+        /* 섹션 헤더 수정 버튼 */
+        .section-edit-btn {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: var(--bg-section);
+            border: 1px solid var(--border-light);
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            color: var(--text-mid);
+            margin-left: auto;
+            transition: all 0.2s;
+        }
+
+        .section-edit-btn.show { display: flex; }
+        .section-edit-btn:hover { background: var(--pastel-gold-light); border-color: var(--pastel-gold); }
+
+        /* 색상 선택기 */
+        .color-picker {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .color-option {
+            cursor: pointer;
+        }
+
+        .color-option input { display: none; }
+
+        .color-swatch {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            display: block;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .color-option input:checked + .color-swatch {
+            border-color: var(--text-dark);
+            transform: scale(1.1);
+        }
+
+        .color-swatch.blue { background: linear-gradient(135deg, var(--pastel-blue-light), var(--pastel-blue)); }
+        .color-swatch.green { background: linear-gradient(135deg, var(--pastel-green-light), var(--pastel-green)); }
+        .color-swatch.purple { background: linear-gradient(135deg, var(--pastel-purple-light), var(--pastel-purple)); }
+        .color-swatch.pink { background: linear-gradient(135deg, var(--pastel-pink), var(--pastel-pink)); }
+        .color-swatch.gold { background: linear-gradient(135deg, var(--pastel-gold-light), var(--pastel-gold)); }
+        .color-swatch.mint { background: linear-gradient(135deg, var(--pastel-mint), var(--pastel-mint)); }
+
+        /* 섹션 아이콘 색상 */
+        .section-icon.blue { background: linear-gradient(135deg, var(--pastel-blue-light), var(--pastel-blue)); }
+        .section-icon.green { background: linear-gradient(135deg, var(--pastel-green-light), var(--pastel-green)); }
+        .section-icon.purple { background: linear-gradient(135deg, var(--pastel-purple-light), var(--pastel-purple)); }
+        .section-icon.pink { background: linear-gradient(135deg, var(--pastel-pink), var(--pastel-pink)); }
+        .section-icon.gold { background: linear-gradient(135deg, var(--pastel-gold-light), var(--pastel-gold)); }
+        .section-icon.mint { background: linear-gradient(135deg, var(--pastel-mint), var(--pastel-mint)); }
+
+        .main-title {
+            font-family: 'Cinzel', serif;
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: var(--pastel-gold-dark);
+            letter-spacing: 4px;
+            margin-bottom: 8px;
+        }
+
+        .sub-title {
+            font-size: 1.1rem;
+            color: var(--text-mid);
+            letter-spacing: 2px;
+        }
+
+        /* 네비게이션 */
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            padding: 12px 24px;
+            border: 1px solid var(--border-light);
+            border-radius: 30px;
+            background: var(--bg-card);
+            color: var(--text-mid);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-tab:hover {
+            border-color: var(--pastel-gold);
+            background: var(--pastel-gold-light);
+            transform: translateY(-2px);
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, var(--pastel-gold), var(--pastel-gold-light));
+            border-color: var(--pastel-gold-dark);
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        .nav-count {
+            background: rgba(0,0,0,0.1);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* 섹션 */
+        .section { margin-bottom: 50px; }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 24px;
+            padding-bottom: 14px;
+            border-bottom: 2px solid var(--border-light);
+        }
+
+        .section-icon {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+
+        .section-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .section-title .count {
+            font-size: 1rem;
+            color: var(--text-light);
+            font-weight: 400;
+        }
+
+        .section-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 2px;
+        }
+
+        /* 그리드 */
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        /* 추가 버튼 카드 */
+        .add-card {
+            background: var(--bg-card);
+            border: 2px dashed var(--border-light);
+            border-radius: 16px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 280px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--text-light);
+        }
+
+        .add-card.show { display: flex; }
+
+        .add-card:hover {
+            border-color: var(--pastel-gold);
+            background: var(--pastel-gold-light);
+            color: var(--text-dark);
+        }
+
+        .add-card-icon {
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            background: var(--bg-section);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-bottom: 12px;
+            transition: all 0.3s;
+        }
+
+        .add-card:hover .add-card-icon {
+            background: var(--pastel-gold);
+            transform: scale(1.1);
+        }
+
+        .add-card-text { font-size: 0.9rem; font-weight: 500; }
+
+        /* 포트폴리오 카드 */
+        .portfolio-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .portfolio-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 40px var(--shadow-mid);
+            border-color: var(--pastel-gold);
+        }
+
+        .card-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            cursor: pointer;
+        }
+
+        .card-thumbnail {
+            height: 160px;
+            background: var(--bg-section);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-thumbnail.pdf { background: linear-gradient(135deg, var(--pastel-red-light), #fff5f5); }
+        .card-thumbnail.html { background: linear-gradient(135deg, var(--pastel-blue-light), #f5faff); }
+        .card-thumbnail.image { background: linear-gradient(135deg, var(--pastel-purple-light), #faf5ff); }
+        .card-thumbnail.project { background: linear-gradient(135deg, var(--pastel-green-light), #f5fff8); }
+        .card-thumbnail.video { background: linear-gradient(135deg, var(--pastel-pink), #fff5fa); }
+        .card-thumbnail.other { background: linear-gradient(135deg, var(--pastel-mint), #f5ffff); }
+
+        .card-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .card-badge.pdf { background: var(--pastel-red); }
+        .card-badge.html { background: var(--pastel-blue); }
+        .card-badge.image { background: var(--pastel-purple); }
+        .card-badge.video { background: var(--pastel-pink); }
+        .card-badge.other { background: var(--pastel-mint); }
+
+        .card-edit-btn {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.9);
+            border: 1px solid var(--border-light);
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            color: var(--text-mid);
+            transition: all 0.2s;
+            z-index: 10;
+        }
+
+        .card-edit-btn.show { display: flex; }
+        .card-edit-btn:hover { background: var(--pastel-gold-light); border-color: var(--pastel-gold); }
+
+        .card-content { padding: 20px; }
+
+        .card-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .card-description {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .card-date { font-size: 0.75rem; color: var(--text-light); }
+
+        .card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+
+        .card-tag {
+            padding: 3px 10px;
+            background: var(--bg-section);
+            border-radius: 12px;
+            font-size: 0.7rem;
+            color: var(--text-mid);
+        }
+
+        /* 푸터 */
+        footer {
+            margin-top: 80px;
+            padding-top: 40px;
+            border-top: 1px solid var(--border-light);
+            text-align: center;
+        }
+
+        .contact-title {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 16px;
+        }
+
+        .contact-links {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .contact-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 25px;
+            text-decoration: none;
+            color: var(--text-mid);
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .contact-link:hover {
+            border-color: var(--pastel-gold);
+            background: var(--pastel-gold-light);
+        }
+
+        .copyright { font-size: 0.8rem; color: var(--text-light); }
+
+        /* 스토리지 정보 */
+        .storage-info {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: var(--text-light);
+            box-shadow: 0 4px 15px var(--shadow-soft);
+            display: none;
+        }
+
+        .storage-info.show { display: block; }
+
+        @media (max-width: 768px) {
+            .container { padding: 40px 16px; }
+            .main-title { font-size: 2rem; }
+            .portfolio-grid { grid-template-columns: 1fr; }
+            .nav-tabs { gap: 8px; }
+            .nav-tab { padding: 10px 16px; font-size: 0.8rem; }
+            .modal { padding: 24px; margin: 10px; }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .portfolio-card { animation: fadeInUp 0.5s ease forwards; }
+    </style>
+</head>
+<body>
+    <!-- 상단 바 -->
+    <div class="top-bar">
+        <div id="loggedInStatus" class="logged-in-indicator" style="display: none;">편집 모드</div>
+        <button id="settingsBtn" class="settings-btn" style="display: none;" onclick="openModal('settingsModal')">⚙️ 설정</button>
+        <button id="logoutBtn" class="logout-btn" style="display: none;" onclick="logout()">로그아웃</button>
+        <button id="loginBtn" class="login-btn" onclick="openModal('loginModal')">🔐 로그인</button>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="profile-section">
+                <div class="profile-image" id="profileImage">
+                    <span id="profileEmoji">🎮</span>
+                    <img id="profileImg" style="display: none; max-width: 200px; max-height: 260px; width: auto; height: auto; border-radius: 8px;">
+                    <div class="profile-edit-overlay" id="profileEditOverlay">📷</div>
+                </div>
+                <div>
+                    <h1 class="main-title" id="mainTitle">PORTFOLIO</h1>
+                    <p class="sub-title" id="subTitle">GAME DESIGNER</p>
+                </div>
+            </div>
+            <div class="intro-text" id="introText">
+                <span id="introContent">게임 시스템 설계와 콘텐츠 기획에 열정을 가진 게임 기획자입니다.
+                사용자 경험을 최우선으로 고려하며, 데이터 기반의 밸런스 설계와 
+                직관적인 시스템 구조를 추구합니다.</span>
+                <div class="intro-edit-overlay" id="introEditOverlay">✏️ 클릭하여 수정</div>
+            </div>
+        </header>
+
+        <nav class="nav-tabs" id="navTabs">
+            <!-- 동적으로 생성됨 -->
+        </nav>
+
+        <div id="sectionsContainer">
+            <!-- 섹션들이 동적으로 생성됨 -->
+        </div>
+
+        <!-- 섹션 추가 버튼 -->
+        <div class="add-section-btn" id="addSectionBtn" onclick="openSectionModal()">
+            <span>+ 새 섹션 추가</span>
+        </div>
+
+        <footer>
+            <div class="contact-title">CONTACT</div>
+            <div class="contact-links">
+                <a href="/cdn-cgi/l/email-protection#641d0b11164a0109050d0824011c05091408014a070b09" class="contact-link">✉️ Email</a>
+                <a href="#" class="contact-link">💻 GitHub</a>
+                <a href="#" class="contact-link">💼 LinkedIn</a>
+            </div>
+            <p class="copyright">© 2024 Game Designer Portfolio</p>
+        </footer>
+    </div>
+
+    <div class="storage-info" id="storageInfo">💾 사용 중: <span id="storageUsed">0 MB</span></div>
+
+    <!-- 프로필 수정 모달 -->
+    <div class="modal-overlay" id="profileModal">
+        <div class="modal">
+            <h2 class="modal-title">👤 프로필 수정</h2>
+            <div class="form-group">
+                <label class="form-label">프로필 이미지</label>
+                <div class="thumbnail-upload-area" id="profileImageUpload" onclick="document.getElementById('profileImageInput').click()">
+                    <div class="thumbnail-placeholder" id="profileImagePlaceholder">
+                        <span>🖼️</span>
+                        <span>클릭하여 이미지 업로드</span>
+                    </div>
+                    <img class="thumbnail-preview-img" id="profileImagePreview" style="display: none;">
+                    <button type="button" class="thumbnail-remove-btn" id="profileImageRemoveBtn" onclick="event.stopPropagation(); removeProfileImage()" style="display: none;">×</button>
+                </div>
+                <input type="file" id="profileImageInput" style="display: none;" accept="image/*" onchange="handleProfileImageSelect(event)">
+            </div>
+            <div class="form-group">
+                <label class="form-label">메인 타이틀</label>
+                <input type="text" class="form-input" id="profileTitle" placeholder="PORTFOLIO">
+            </div>
+            <div class="form-group">
+                <label class="form-label">서브 타이틀</label>
+                <input type="text" class="form-input" id="profileSubtitle" placeholder="GAME DESIGNER">
+            </div>
+            <button class="form-btn primary" onclick="saveProfile()">저장</button>
+            <button class="form-btn secondary" onclick="closeModal('profileModal')">취소</button>
+        </div>
+    </div>
+
+    <!-- 자기소개 수정 모달 -->
+    <div class="modal-overlay" id="introModal">
+        <div class="modal">
+            <h2 class="modal-title">✏️ 자기소개 수정</h2>
+            <div class="form-group">
+                <label class="form-label">자기소개</label>
+                <textarea class="form-textarea" id="introTextInput" rows="6" placeholder="자기소개를 입력하세요"></textarea>
+            </div>
+            <button class="form-btn primary" onclick="saveIntro()">저장</button>
+            <button class="form-btn secondary" onclick="closeModal('introModal')">취소</button>
+        </div>
+    </div>
+
+    <!-- 섹션 추가/수정 모달 -->
+    <div class="modal-overlay" id="sectionModal">
+        <div class="modal">
+            <h2 class="modal-title" id="sectionModalTitle">📁 새 섹션 추가</h2>
+            <input type="hidden" id="editSectionId">
+            <div class="form-group">
+                <label class="form-label">아이콘 (이모지)</label>
+                <input type="text" class="form-input" id="sectionIcon" placeholder="📄" maxlength="2">
+            </div>
+            <div class="form-group">
+                <label class="form-label">섹션 제목 *</label>
+                <input type="text" class="form-input" id="sectionTitle" placeholder="DOCUMENTS">
+            </div>
+            <div class="form-group">
+                <label class="form-label">섹션 설명</label>
+                <input type="text" class="form-input" id="sectionSubtitle" placeholder="기획서 및 분석 문서">
+            </div>
+            <div class="form-group">
+                <label class="form-label">섹션 색상</label>
+                <div class="color-picker">
+                    <label class="color-option">
+                        <input type="radio" name="sectionColor" value="blue" checked>
+                        <span class="color-swatch blue"></span>
+                    </label>
+                    <label class="color-option">
+                        <input type="radio" name="sectionColor" value="green">
+                        <span class="color-swatch green"></span>
+                    </label>
+                    <label class="color-option">
+                        <input type="radio" name="sectionColor" value="purple">
+                        <span class="color-swatch purple"></span>
+                    </label>
+                    <label class="color-option">
+                        <input type="radio" name="sectionColor" value="pink">
+                        <span class="color-swatch pink"></span>
+                    </label>
+                    <label class="color-option">
+                        <input type="radio" name="sectionColor" value="gold">
+                        <span class="color-swatch gold"></span>
+                    </label>
+                    <label class="color-option">
+                        <input type="radio" name="sectionColor" value="mint">
+                        <span class="color-swatch mint"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="form-error" id="sectionError"></div>
+            <button class="form-btn primary" onclick="saveSection()">저장</button>
+            <button class="form-btn danger" id="deleteSectionBtn" onclick="deleteSection()" style="display: none;">섹션 삭제</button>
+            <button class="form-btn secondary" onclick="closeModal('sectionModal')">취소</button>
+        </div>
+    </div>
+
+    <!-- 로그인 모달 -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal">
+            <h2 class="modal-title">🔐 로그인</h2>
+            <div id="loginSetupForm">
+                <p style="text-align:center; color: var(--text-mid); margin-bottom: 20px;">
+                    비밀번호가 설정되지 않았습니다.<br>새 비밀번호를 설정해주세요.
+                </p>
+                <div class="form-group">
+                    <label class="form-label">새 비밀번호</label>
+                    <input type="password" class="form-input" id="setupPassword" placeholder="비밀번호 입력">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">비밀번호 확인</label>
+                    <input type="password" class="form-input" id="setupPasswordConfirm" placeholder="비밀번호 재입력">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">비밀번호 힌트 (찾기용)</label>
+                    <input type="text" class="form-input" id="setupHint" placeholder="본인만 아는 힌트">
+                </div>
+                <div class="form-error" id="setupError"></div>
+                <button class="form-btn primary" onclick="setupPassword()">비밀번호 설정</button>
+            </div>
+            <div id="loginForm" style="display: none;">
+                <div class="form-group">
+                    <label class="form-label">비밀번호</label>
+                    <input type="password" class="form-input" id="loginPassword" placeholder="비밀번호 입력">
+                </div>
+                <div class="form-error" id="loginError"></div>
+                <button class="form-btn primary" onclick="login()">로그인</button>
+                <span class="form-link" onclick="showForgotPassword()">비밀번호를 잊으셨나요?</span>
+            </div>
+            <div id="forgotForm" style="display: none;">
+                <p style="text-align:center; color: var(--text-mid); margin-bottom: 16px;" id="hintDisplay"></p>
+                <div class="form-group">
+                    <label class="form-label">힌트 답변</label>
+                    <input type="text" class="form-input" id="hintAnswer" placeholder="힌트에 해당하는 답변">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">새 비밀번호</label>
+                    <input type="password" class="form-input" id="newPassword" placeholder="새 비밀번호">
+                </div>
+                <div class="form-error" id="forgotError"></div>
+                <button class="form-btn primary" onclick="resetPassword()">비밀번호 재설정</button>
+                <span class="form-link" onclick="showLoginForm()">← 로그인으로 돌아가기</span>
+            </div>
+            <button class="form-btn secondary" style="margin-top: 12px;" onclick="closeModal('loginModal')">취소</button>
+        </div>
+    </div>
+
+    <!-- 설정 모달 -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal">
+            <h2 class="modal-title">⚙️ 설정</h2>
+            <div class="form-group">
+                <label class="form-label">현재 비밀번호</label>
+                <input type="password" class="form-input" id="currentPw" placeholder="현재 비밀번호">
+            </div>
+            <div class="form-group">
+                <label class="form-label">새 비밀번호</label>
+                <input type="password" class="form-input" id="newPw" placeholder="새 비밀번호 (변경 시에만)">
+            </div>
+            <div class="form-group">
+                <label class="form-label">새 비밀번호 힌트</label>
+                <input type="text" class="form-input" id="newHint" placeholder="새 힌트 (변경 시에만)">
+            </div>
+            <div class="form-error" id="settingsError"></div>
+            <button class="form-btn primary" onclick="changePassword()">변경 저장</button>
+            <button class="form-btn secondary" onclick="closeModal('settingsModal')">취소</button>
+        </div>
+    </div>
+
+    <!-- 항목 추가 모달 -->
+    <div class="modal-overlay" id="addModal">
+        <div class="modal">
+            <h2 class="modal-title" id="addModalTitle">📄 새 항목 추가</h2>
+            <input type="hidden" id="addCategory">
+            <div class="form-group">
+                <label class="form-label">파일 업로드 (최대 100MB)</label>
+                <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('fileInput').click()">
+                    <div class="file-upload-icon">📁</div>
+                    <div class="file-upload-text">클릭하거나 파일을 드래그하세요</div>
+                    <div class="file-upload-hint">PDF, HTML, PNG, JPG, GIF, MP4 등</div>
+                </div>
+                <input type="file" id="fileInput" style="display: none;" accept="*/*" onchange="handleFileSelect(event)">
+                <div class="file-preview" id="filePreview">
+                    <span class="file-preview-icon" id="filePreviewIcon">📄</span>
+                    <div class="file-preview-info">
+                        <div class="file-preview-name" id="filePreviewName"></div>
+                        <div class="file-preview-size" id="filePreviewSize"></div>
+                    </div>
+                    <button class="file-preview-remove" onclick="removeFile()">×</button>
+                </div>
+                <div class="upload-progress" id="uploadProgress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">업로드 중... 0%</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">또는 외부 링크</label>
+                <input type="url" class="form-input" id="itemLink" placeholder="https://...">
+            </div>
+            <div class="form-group">
+                <label class="form-label">썸네일 이미지 (선택)</label>
+                <div class="thumbnail-upload-area" id="thumbnailUploadArea" onclick="document.getElementById('thumbnailInput').click()">
+                    <div class="thumbnail-placeholder" id="thumbnailPlaceholder">
+                        <span>🖼️</span>
+                        <span>클릭하여 썸네일 추가</span>
+                    </div>
+                    <img class="thumbnail-preview-img" id="thumbnailPreviewImg" style="display: none;">
+                    <button type="button" class="thumbnail-remove-btn" id="thumbnailRemoveBtn" onclick="event.stopPropagation(); removeThumbnail()" style="display: none;">×</button>
+                </div>
+                <input type="file" id="thumbnailInput" style="display: none;" accept="image/*" onchange="handleThumbnailSelect(event)">
+            </div>
+            <div class="form-group">
+                <label class="form-label">제목 *</label>
+                <input type="text" class="form-input" id="itemTitle" placeholder="항목 제목">
+            </div>
+            <div class="form-group">
+                <label class="form-label">설명</label>
+                <textarea class="form-textarea" id="itemDesc" placeholder="항목에 대한 설명"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">날짜</label>
+                <input type="month" class="form-input" id="itemDate">
+            </div>
+            <div class="form-group">
+                <label class="form-label">키워드 (Enter로 추가)</label>
+                <div class="tags-input-container" id="tagsContainer">
+                    <input type="text" class="tag-input" id="tagInput" placeholder="키워드 입력 후 Enter">
+                </div>
+            </div>
+            <div class="form-error" id="addError"></div>
+            <button class="form-btn primary" id="saveBtn" onclick="saveItem()">저장</button>
+            <button class="form-btn secondary" onclick="closeModal('addModal')">취소</button>
+        </div>
+    </div>
+
+    <!-- 항목 수정 모달 -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal">
+            <h2 class="modal-title">✏️ 항목 수정</h2>
+            <input type="hidden" id="editItemId">
+            <input type="hidden" id="editCategory">
+            <div class="form-group">
+                <label class="form-label">썸네일 이미지</label>
+                <div class="thumbnail-upload-area" id="editThumbnailUploadArea" onclick="document.getElementById('editThumbnailInput').click()">
+                    <div class="thumbnail-placeholder" id="editThumbnailPlaceholder">
+                        <span>🖼️</span>
+                        <span>클릭하여 썸네일 추가</span>
+                    </div>
+                    <img class="thumbnail-preview-img" id="editThumbnailPreviewImg" style="display: none;">
+                    <button type="button" class="thumbnail-remove-btn" id="editThumbnailRemoveBtn" onclick="event.stopPropagation(); removeEditThumbnail()" style="display: none;">×</button>
+                </div>
+                <input type="file" id="editThumbnailInput" style="display: none;" accept="image/*" onchange="handleEditThumbnailSelect(event)">
+            </div>
+            <div class="form-group">
+                <label class="form-label">제목 *</label>
+                <input type="text" class="form-input" id="editTitle">
+            </div>
+            <div class="form-group">
+                <label class="form-label">설명</label>
+                <textarea class="form-textarea" id="editDesc"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">날짜</label>
+                <input type="month" class="form-input" id="editDate">
+            </div>
+            <div class="form-group">
+                <label class="form-label">키워드</label>
+                <div class="tags-input-container" id="editTagsContainer">
+                    <input type="text" class="tag-input" id="editTagInput" placeholder="키워드 입력 후 Enter">
+                </div>
+            </div>
+            <div class="form-error" id="editError"></div>
+            <button class="form-btn primary" onclick="updateItem()">수정 저장</button>
+            <button class="form-btn danger" onclick="deleteItem()">삭제</button>
+            <button class="form-btn secondary" onclick="closeModal('editModal')">취소</button>
+        </div>
+    </div>
+
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+        // ============ IndexedDB 설정 ============
+        const DB_NAME = 'PortfolioDB';
+        const DB_VERSION = 2;
+        const STORES = {
+            META: 'metadata',
+            FILES: 'files',
+            AUTH: 'auth',
+            PROFILE: 'profile',
+            SECTIONS: 'sections'
+        };
+
+        let db = null;
+        let isLoggedIn = false;
+        let currentTags = [];
+        let editTags = [];
+        let selectedFile = null;
+        let selectedThumbnail = null;
+        let editThumbnail = null;
+        let editThumbnailChanged = false;
+        let editThumbnailRemoved = false;
+        let currentFilter = 'all'; // 현재 필터 상태
+        let draggedItem = null; // 드래그 중인 아이템
+
+        const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+        const MAX_THUMBNAIL_SIZE = 5 * 1024 * 1024; // 5MB
+
+        // DB 초기화
+        async function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve(db);
+                };
+
+                request.onupgradeneeded = (event) => {
+                    const database = event.target.result;
+                    
+                    // 메타데이터 저장소
+                    if (!database.objectStoreNames.contains(STORES.META)) {
+                        database.createObjectStore(STORES.META, { keyPath: 'id' });
+                    }
+                    
+                    // 파일 저장소
+                    if (!database.objectStoreNames.contains(STORES.FILES)) {
+                        database.createObjectStore(STORES.FILES, { keyPath: 'id' });
+                    }
+                    
+                    // 인증 저장소
+                    if (!database.objectStoreNames.contains(STORES.AUTH)) {
+                        database.createObjectStore(STORES.AUTH, { keyPath: 'key' });
+                    }
+
+                    // 프로필 저장소
+                    if (!database.objectStoreNames.contains(STORES.PROFILE)) {
+                        database.createObjectStore(STORES.PROFILE, { keyPath: 'key' });
+                    }
+
+                    // 섹션 저장소
+                    if (!database.objectStoreNames.contains(STORES.SECTIONS)) {
+                        database.createObjectStore(STORES.SECTIONS, { keyPath: 'id' });
+                    }
+                };
+            });
+        }
+
+        // DB 트랜잭션 헬퍼
+        function getStore(storeName, mode = 'readonly') {
+            const tx = db.transaction(storeName, mode);
+            return tx.objectStore(storeName);
+        }
+
+        // 인증 관련
+        async function getAuth() {
+            return new Promise((resolve) => {
+                const store = getStore(STORES.AUTH);
+                const request = store.get('credentials');
+                request.onsuccess = () => resolve(request.result?.data || null);
+                request.onerror = () => resolve(null);
+            });
+        }
+
+        async function setAuth(password, hint) {
+            return new Promise((resolve, reject) => {
+                const store = getStore(STORES.AUTH, 'readwrite');
+                const request = store.put({ key: 'credentials', data: { password, hint } });
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // 메타데이터 관련
+        async function getAllMetadata() {
+            return new Promise(async (resolve) => {
+                const sections = await getSections();
+                const store = getStore(STORES.META);
+                const request = store.getAll();
+                request.onsuccess = () => {
+                    const items = request.result || [];
+                    const data = {};
+                    sections.forEach(s => data[s.id] = []);
+                    items.forEach(item => {
+                        if (data[item.category] !== undefined) {
+                            data[item.category].push(item);
+                        }
+                    });
+                    resolve(data);
+                };
+                request.onerror = () => {
+                    const data = {};
+                    sections.forEach(s => data[s.id] = []);
+                    resolve(data);
+                };
+            });
+        }
+
+        async function saveMetadata(item) {
+            return new Promise((resolve, reject) => {
+                const store = getStore(STORES.META, 'readwrite');
+                const request = store.put(item);
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function deleteMetadata(id) {
+            return new Promise((resolve, reject) => {
+                const store = getStore(STORES.META, 'readwrite');
+                const request = store.delete(id);
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // 파일 관련
+        async function saveFile(id, fileData) {
+            return new Promise((resolve, reject) => {
+                const store = getStore(STORES.FILES, 'readwrite');
+                const request = store.put({ id, data: fileData });
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function getFile(id) {
+            return new Promise((resolve) => {
+                const store = getStore(STORES.FILES);
+                const request = store.get(id);
+                request.onsuccess = () => resolve(request.result?.data || null);
+                request.onerror = () => resolve(null);
+            });
+        }
+
+        async function deleteFile(id) {
+            return new Promise((resolve, reject) => {
+                const store = getStore(STORES.FILES, 'readwrite');
+                const request = store.delete(id);
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // 스토리지 사용량 계산
+        async function getStorageUsage() {
+            if (navigator.storage && navigator.storage.estimate) {
+                const estimate = await navigator.storage.estimate();
+                return {
+                    used: estimate.usage || 0,
+                    quota: estimate.quota || 0
+                };
+            }
+            return { used: 0, quota: 0 };
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        async function updateStorageInfo() {
+            const usage = await getStorageUsage();
+            document.getElementById('storageUsed').textContent = formatBytes(usage.used);
+            if (isLoggedIn) {
+                document.getElementById('storageInfo').classList.add('show');
+            }
+        }
+
+        // ============ 프로필 관련 ============
+        async function getProfile() {
+            return new Promise((resolve) => {
+                const store = getStore(STORES.PROFILE);
+                const request = store.get('main');
+                request.onsuccess = () => resolve(request.result?.data || null);
+                request.onerror = () => resolve(null);
+            });
+        }
+
+        async function saveProfileData(profileData) {
+            return new Promise((resolve, reject) => {
+                const store = getStore(STORES.PROFILE, 'readwrite');
+                const request = store.put({ key: 'main', data: profileData });
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        let profileImageData = null;
+
+        function handleProfileImageSelect(event) {
+            if (event.target.files.length) {
+                const file = event.target.files[0];
+                if (!file.type.startsWith('image/')) {
+                    alert('이미지 파일만 업로드 가능합니다.');
+                    return;
+                }
+                if (file.size > MAX_THUMBNAIL_SIZE) {
+                    alert('이미지는 5MB 이하여야 합니다.');
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    profileImageData = e.target.result;
+                    document.getElementById('profileImagePreview').src = e.target.result;
+                    document.getElementById('profileImagePreview').style.display = 'block';
+                    document.getElementById('profileImagePlaceholder').style.display = 'none';
+                    document.getElementById('profileImageRemoveBtn').style.display = 'flex';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removeProfileImage() {
+            profileImageData = 'removed';
+            document.getElementById('profileImageInput').value = '';
+            document.getElementById('profileImagePreview').style.display = 'none';
+            document.getElementById('profileImagePlaceholder').style.display = 'flex';
+            document.getElementById('profileImageRemoveBtn').style.display = 'none';
+        }
+
+        async function openProfileModal() {
+            const profile = await getProfile();
+            document.getElementById('profileTitle').value = profile?.title || 'PORTFOLIO';
+            document.getElementById('profileSubtitle').value = profile?.subtitle || 'GAME DESIGNER';
+            
+            profileImageData = null;
+            if (profile?.image) {
+                document.getElementById('profileImagePreview').src = profile.image;
+                document.getElementById('profileImagePreview').style.display = 'block';
+                document.getElementById('profileImagePlaceholder').style.display = 'none';
+                document.getElementById('profileImageRemoveBtn').style.display = 'flex';
+            } else {
+                document.getElementById('profileImagePreview').style.display = 'none';
+                document.getElementById('profileImagePlaceholder').style.display = 'flex';
+                document.getElementById('profileImageRemoveBtn').style.display = 'none';
+            }
+            
+            openModal('profileModal');
+        }
+
+        async function saveProfile() {
+            const currentProfile = await getProfile() || {};
+            const newProfile = {
+                title: document.getElementById('profileTitle').value || 'PORTFOLIO',
+                subtitle: document.getElementById('profileSubtitle').value || 'GAME DESIGNER',
+                image: profileImageData === 'removed' ? null : (profileImageData || currentProfile.image)
+            };
+            
+            await saveProfileData(newProfile);
+            await loadProfile();
+            closeModal('profileModal');
+        }
+
+        async function loadProfile() {
+            const profile = await getProfile();
+            const profileImageEl = document.getElementById('profileImage');
+            
+            document.getElementById('mainTitle').textContent = profile?.title || 'PORTFOLIO';
+            document.getElementById('subTitle').textContent = profile?.subtitle || 'GAME DESIGNER';
+            
+            if (profile?.image) {
+                document.getElementById('profileEmoji').style.display = 'none';
+                const img = document.getElementById('profileImg');
+                img.src = profile.image;
+                img.style.display = 'block';
+                profileImageEl.classList.add('has-image');
+            } else {
+                document.getElementById('profileEmoji').style.display = 'block';
+                document.getElementById('profileImg').style.display = 'none';
+                profileImageEl.classList.remove('has-image');
+            }
+        }
+
+        // 자기소개 관련
+        async function getIntro() {
+            return new Promise((resolve) => {
+                const store = getStore(STORES.PROFILE);
+                const request = store.get('intro');
+                request.onsuccess = () => resolve(request.result?.data || null);
+                request.onerror = () => resolve(null);
+            });
+        }
+
+        async function saveIntroData(intro) {
+            return new Promise((resolve, reject) => {
+                const store = getStore(STORES.PROFILE, 'readwrite');
+                const request = store.put({ key: 'intro', data: intro });
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function openIntroModal() {
+            const intro = await getIntro();
+            document.getElementById('introTextInput').value = intro || document.getElementById('introContent').textContent.trim();
+            openModal('introModal');
+        }
+
+        async function saveIntro() {
+            const intro = document.getElementById('introTextInput').value.trim();
+            await saveIntroData(intro);
+            document.getElementById('introContent').textContent = intro;
+            closeModal('introModal');
+        }
+
+        async function loadIntro() {
+            const intro = await getIntro();
+            if (intro) {
+                document.getElementById('introContent').textContent = intro;
+            }
+        }
+
+        // ============ 섹션 관련 ============
+        const DEFAULT_SECTIONS = [
+            { id: 'documents', icon: '📄', title: 'DOCUMENTS', subtitle: '기획서 및 분석 문서', color: 'blue', order: 0 },
+            { id: 'tools', icon: '🛠️', title: 'SIMULATORS & TOOLS', subtitle: '인터랙티브 시뮬레이터 및 도구', color: 'green', order: 1 },
+            { id: 'visuals', icon: '🎨', title: 'VISUALS', subtitle: '다이어그램 및 시각 자료', color: 'purple', order: 2 },
+            { id: 'projects', icon: '📁', title: 'PROJECTS', subtitle: '참여 프로젝트', color: 'pink', order: 3 }
+        ];
+
+        async function getSections() {
+            return new Promise((resolve) => {
+                const store = getStore(STORES.SECTIONS);
+                const request = store.getAll();
+                request.onsuccess = async () => {
+                    let sections = request.result || [];
+                    if (sections.length === 0) {
+                        // 기본 섹션 저장
+                        for (const section of DEFAULT_SECTIONS) {
+                            await saveSectionData(section);
+                        }
+                        resolve(DEFAULT_SECTIONS);
+                    } else {
+                        resolve(sections.sort((a, b) => a.order - b.order));
+                    }
+                };
+                request.onerror = () => resolve(DEFAULT_SECTIONS);
+            });
+        }
+
+        async function saveSectionData(section) {
+            return new Promise((resolve, reject) => {
+                const store = getStore(STORES.SECTIONS, 'readwrite');
+                const request = store.put(section);
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function deleteSectionData(id) {
+            return new Promise((resolve, reject) => {
+                const store = getStore(STORES.SECTIONS, 'readwrite');
+                const request = store.delete(id);
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        let editingSectionId = null;
+
+        function openSectionModal(sectionId = null) {
+            editingSectionId = sectionId;
+            
+            if (sectionId) {
+                document.getElementById('sectionModalTitle').textContent = '✏️ 섹션 수정';
+                document.getElementById('deleteSectionBtn').style.display = 'block';
+                
+                getSections().then(sections => {
+                    const section = sections.find(s => s.id === sectionId);
+                    if (section) {
+                        document.getElementById('sectionIcon').value = section.icon;
+                        document.getElementById('sectionTitle').value = section.title;
+                        document.getElementById('sectionSubtitle').value = section.subtitle;
+                        document.querySelector(`input[name="sectionColor"][value="${section.color}"]`).checked = true;
+                    }
+                });
+            } else {
+                document.getElementById('sectionModalTitle').textContent = '📁 새 섹션 추가';
+                document.getElementById('deleteSectionBtn').style.display = 'none';
+                document.getElementById('sectionIcon').value = '📄';
+                document.getElementById('sectionTitle').value = '';
+                document.getElementById('sectionSubtitle').value = '';
+                document.querySelector('input[name="sectionColor"][value="blue"]').checked = true;
+            }
+            
+            openModal('sectionModal');
+        }
+
+        async function saveSection() {
+            const icon = document.getElementById('sectionIcon').value || '📄';
+            const title = document.getElementById('sectionTitle').value.trim();
+            const subtitle = document.getElementById('sectionSubtitle').value.trim();
+            const color = document.querySelector('input[name="sectionColor"]:checked').value;
+            const errorEl = document.getElementById('sectionError');
+
+            if (!title) {
+                errorEl.textContent = '섹션 제목을 입력해주세요.';
+                errorEl.classList.add('show');
+                return;
+            }
+
+            const sections = await getSections();
+
+            if (editingSectionId) {
+                // 수정
+                const section = sections.find(s => s.id === editingSectionId);
+                if (section) {
+                    section.icon = icon;
+                    section.title = title;
+                    section.subtitle = subtitle;
+                    section.color = color;
+                    await saveSectionData(section);
+                }
+            } else {
+                // 새로 추가
+                const newSection = {
+                    id: 'section_' + Date.now(),
+                    icon,
+                    title,
+                    subtitle,
+                    color,
+                    order: sections.length
+                };
+                await saveSectionData(newSection);
+            }
+
+            closeModal('sectionModal');
+            await renderSectionsAndNav();
+            await renderAllSections();
+            updateUI();
+        }
+
+        async function deleteSection() {
+            if (!editingSectionId) return;
+            if (!confirm('이 섹션과 포함된 모든 항목이 삭제됩니다. 계속하시겠습니까?')) return;
+
+            // 섹션에 속한 항목들 삭제
+            const data = await getAllMetadata();
+            const itemsToDelete = data[editingSectionId] || [];
+            for (const item of itemsToDelete) {
+                await deleteMetadata(item.id);
+                await deleteFile(item.id);
+                await deleteFile(item.id + '_thumb');
+            }
+
+            await deleteSectionData(editingSectionId);
+            
+            closeModal('sectionModal');
+            await renderSectionsAndNav();
+            await renderAllSections();
+            updateUI();
+        }
+
+        async function renderSectionsAndNav() {
+            const sections = await getSections();
+            const data = await getAllMetadata();
+            
+            // 네비게이션 렌더링 (전체 버튼 포함)
+            const navContainer = document.getElementById('navTabs');
+            const totalCount = sections.reduce((sum, s) => sum + (data[s.id] || []).length, 0);
+            
+            navContainer.innerHTML = `
+                <a href="#" class="nav-tab ${currentFilter === 'all' ? 'active' : ''}" data-filter="all">
+                    📋 전체 <span class="nav-count">${totalCount}</span>
+                </a>
+                ${sections.map(section => `
+                    <a href="#${section.id}" class="nav-tab ${currentFilter === section.id ? 'active' : ''}" data-filter="${section.id}">
+                        ${section.icon} ${section.title.split(' ')[0]} 
+                        <span class="nav-count" id="navCount-${section.id}">${(data[section.id] || []).length}</span>
+                    </a>
+                `).join('')}
+            `;
+
+            // 네비게이션 이벤트 (필터링)
+            navContainer.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const filter = this.dataset.filter;
+                    setFilter(filter);
+                    
+                    // 특정 섹션 클릭 시 스크롤
+                    if (filter !== 'all') {
+                        document.getElementById(filter)?.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            });
+
+            // 섹션 렌더링
+            const sectionsContainer = document.getElementById('sectionsContainer');
+            sectionsContainer.innerHTML = sections.map(section => `
+                <section class="section" id="${section.id}">
+                    <div class="section-header">
+                        <div class="section-icon ${section.color}">${section.icon}</div>
+                        <div>
+                            <h2 class="section-title">${section.title} <span class="count" id="sectionCount-${section.id}">(${(data[section.id] || []).length})</span></h2>
+                            <p class="section-subtitle">${section.subtitle}</p>
+                        </div>
+                        <button class="section-edit-btn" onclick="openSectionModal('${section.id}')">⚙️</button>
+                    </div>
+                    <div class="portfolio-grid" id="grid-${section.id}">
+                        <div class="add-card" onclick="openAddModal('${section.id}')">
+                            <div class="add-card-icon">+</div>
+                            <div class="add-card-text">새 항목 추가</div>
+                        </div>
+                    </div>
+                </section>
+            `).join('');
+        }
+
+        // ============ UI 로직 ============
+        function checkSession() {
+            isLoggedIn = sessionStorage.getItem('portfolio_session') === 'true';
+            updateLoginUI();
+        }
+
+        async function setupPassword() {
+            const pw = document.getElementById('setupPassword').value;
+            const pwConfirm = document.getElementById('setupPasswordConfirm').value;
+            const hint = document.getElementById('setupHint').value;
+            const errorEl = document.getElementById('setupError');
+
+            if (!pw || pw.length < 4) {
+                errorEl.textContent = '비밀번호는 4자 이상이어야 합니다.';
+                errorEl.classList.add('show');
+                return;
+            }
+            if (pw !== pwConfirm) {
+                errorEl.textContent = '비밀번호가 일치하지 않습니다.';
+                errorEl.classList.add('show');
+                return;
+            }
+            if (!hint) {
+                errorEl.textContent = '비밀번호 힌트를 입력해주세요.';
+                errorEl.classList.add('show');
+                return;
+            }
+
+            await setAuth(pw, hint);
+            isLoggedIn = true;
+            sessionStorage.setItem('portfolio_session', 'true');
+            closeModal('loginModal');
+            updateLoginUI();
+            updateUI();
+            updateStorageInfo();
+            alert('비밀번호가 설정되었습니다. 편집 모드가 활성화되었습니다.');
+        }
+
+        async function login() {
+            const pw = document.getElementById('loginPassword').value;
+            const auth = await getAuth();
+            const errorEl = document.getElementById('loginError');
+
+            if (pw === auth?.password) {
+                isLoggedIn = true;
+                sessionStorage.setItem('portfolio_session', 'true');
+                closeModal('loginModal');
+                updateLoginUI();
+                updateUI();
+                updateStorageInfo();
+            } else {
+                errorEl.textContent = '비밀번호가 올바르지 않습니다.';
+                errorEl.classList.add('show');
+            }
+        }
+
+        function logout() {
+            isLoggedIn = false;
+            sessionStorage.removeItem('portfolio_session');
+            updateLoginUI();
+            updateUI();
+            document.getElementById('storageInfo').classList.remove('show');
+        }
+
+        async function showForgotPassword() {
+            const auth = await getAuth();
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('forgotForm').style.display = 'block';
+            document.getElementById('hintDisplay').textContent = `힌트: "${auth?.hint || '설정된 힌트 없음'}"`;
+        }
+
+        function showLoginForm() {
+            document.getElementById('forgotForm').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'block';
+        }
+
+        async function resetPassword() {
+            const auth = await getAuth();
+            const hintAnswer = document.getElementById('hintAnswer').value;
+            const newPw = document.getElementById('newPassword').value;
+            const errorEl = document.getElementById('forgotError');
+
+            if (hintAnswer.toLowerCase() === auth?.hint?.toLowerCase()) {
+                if (newPw.length >= 4) {
+                    await setAuth(newPw, auth.hint);
+                    alert('비밀번호가 재설정되었습니다.');
+                    showLoginForm();
+                    document.getElementById('loginPassword').value = '';
+                } else {
+                    errorEl.textContent = '새 비밀번호는 4자 이상이어야 합니다.';
+                    errorEl.classList.add('show');
+                }
+            } else {
+                errorEl.textContent = '힌트 답변이 올바르지 않습니다.';
+                errorEl.classList.add('show');
+            }
+        }
+
+        async function changePassword() {
+            const auth = await getAuth();
+            const currentPw = document.getElementById('currentPw').value;
+            const newPw = document.getElementById('newPw').value;
+            const newHint = document.getElementById('newHint').value;
+            const errorEl = document.getElementById('settingsError');
+
+            if (currentPw !== auth?.password) {
+                errorEl.textContent = '현재 비밀번호가 올바르지 않습니다.';
+                errorEl.classList.add('show');
+                return;
+            }
+
+            const finalPw = newPw || auth.password;
+            const finalHint = newHint || auth.hint;
+
+            if (newPw && newPw.length < 4) {
+                errorEl.textContent = '새 비밀번호는 4자 이상이어야 합니다.';
+                errorEl.classList.add('show');
+                return;
+            }
+
+            await setAuth(finalPw, finalHint);
+            alert('설정이 저장되었습니다.');
+            closeModal('settingsModal');
+        }
+
+        async function updateLoginUI() {
+            const auth = await getAuth();
+            document.getElementById('loginBtn').style.display = isLoggedIn ? 'none' : 'block';
+            document.getElementById('logoutBtn').style.display = isLoggedIn ? 'block' : 'none';
+            document.getElementById('settingsBtn').style.display = isLoggedIn ? 'block' : 'none';
+            document.getElementById('loggedInStatus').style.display = isLoggedIn ? 'flex' : 'none';
+
+            if (auth) {
+                document.getElementById('loginSetupForm').style.display = 'none';
+                document.getElementById('loginForm').style.display = 'block';
+            } else {
+                document.getElementById('loginSetupForm').style.display = 'block';
+                document.getElementById('loginForm').style.display = 'none';
+            }
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+            document.querySelectorAll('.form-error').forEach(el => el.classList.remove('show'));
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+            if (id === 'addModal') resetAddForm();
+            if (id === 'editModal') resetEditForm();
+        }
+
+        function openAddModal(category) {
+            if (!isLoggedIn) {
+                alert('로그인이 필요합니다.');
+                openModal('loginModal');
+                return;
+            }
+            const titles = {
+                documents: '📄 새 기획서 추가',
+                tools: '🛠️ 새 도구 추가',
+                visuals: '🎨 새 비주얼 추가',
+                projects: '📁 새 프로젝트 추가'
+            };
+            document.getElementById('addModalTitle').textContent = titles[category] || '새 항목 추가';
+            document.getElementById('addCategory').value = category;
+            currentTags = [];
+            renderTags('tagsContainer', currentTags, 'current');
+            openModal('addModal');
+        }
+
+        async function openEditModal(category, itemId) {
+            if (!isLoggedIn) return;
+            const data = await getAllMetadata();
+            const item = data[category].find(i => i.id === itemId);
+            if (!item) return;
+
+            document.getElementById('editItemId').value = itemId;
+            document.getElementById('editCategory').value = category;
+            document.getElementById('editTitle').value = item.title;
+            document.getElementById('editDesc').value = item.description;
+            document.getElementById('editDate').value = item.date;
+            editTags = [...(item.tags || [])];
+            editThumbnailChanged = false;
+            editThumbnailRemoved = false;
+            
+            // 기존 썸네일 로드
+            if (item.hasThumbnail) {
+                const thumbnailData = await getFile(itemId + '_thumb');
+                if (thumbnailData) {
+                    editThumbnail = thumbnailData;
+                    document.getElementById('editThumbnailPreviewImg').src = thumbnailData;
+                    document.getElementById('editThumbnailPreviewImg').style.display = 'block';
+                    document.getElementById('editThumbnailPlaceholder').style.display = 'none';
+                    document.getElementById('editThumbnailRemoveBtn').style.display = 'flex';
+                } else {
+                    resetEditThumbnailUI();
+                }
+            } else {
+                resetEditThumbnailUI();
+            }
+            
+            renderTags('editTagsContainer', editTags, 'edit');
+            openModal('editModal');
+        }
+
+        function resetEditThumbnailUI() {
+            editThumbnail = null;
+            document.getElementById('editThumbnailInput').value = '';
+            document.getElementById('editThumbnailPreviewImg').style.display = 'none';
+            document.getElementById('editThumbnailPlaceholder').style.display = 'flex';
+            document.getElementById('editThumbnailRemoveBtn').style.display = 'none';
+        }
+
+        function resetAddForm() {
+            document.getElementById('itemTitle').value = '';
+            document.getElementById('itemDesc').value = '';
+            document.getElementById('itemLink').value = '';
+            document.getElementById('itemDate').value = '';
+            document.getElementById('fileInput').value = '';
+            selectedFile = null;
+            selectedThumbnail = null;
+            currentTags = [];
+            document.getElementById('filePreview').classList.remove('show');
+            document.getElementById('uploadProgress').classList.remove('show');
+            document.getElementById('saveBtn').disabled = false;
+            // 썸네일 초기화
+            document.getElementById('thumbnailInput').value = '';
+            document.getElementById('thumbnailPreviewImg').style.display = 'none';
+            document.getElementById('thumbnailPlaceholder').style.display = 'flex';
+            document.getElementById('thumbnailRemoveBtn').style.display = 'none';
+            renderTags('tagsContainer', currentTags, 'current');
+        }
+
+        function resetEditForm() {
+            editTags = [];
+            editThumbnail = null;
+            editThumbnailChanged = false;
+            editThumbnailRemoved = false;
+        }
+
+        // 파일 처리
+        function handleFileSelect(event) {
+            if (event.target.files.length) handleFile(event.target.files[0]);
+        }
+
+        function handleFile(file) {
+            if (file.size > MAX_FILE_SIZE) {
+                alert(`파일 크기가 너무 큽니다. 최대 ${formatBytes(MAX_FILE_SIZE)}까지 업로드 가능합니다.`);
+                return;
+            }
+
+            selectedFile = file;
+            const icon = getFileIcon(file.name);
+            document.getElementById('filePreviewIcon').textContent = icon;
+            document.getElementById('filePreviewName').textContent = file.name;
+            document.getElementById('filePreviewSize').textContent = formatBytes(file.size);
+            document.getElementById('filePreview').classList.add('show');
+
+            generateKeywords(file);
+        }
+
+        function removeFile() {
+            selectedFile = null;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('filePreview').classList.remove('show');
+        }
+
+        // 썸네일 처리 함수들
+        function handleThumbnailSelect(event) {
+            if (event.target.files.length) {
+                handleThumbnailFile(event.target.files[0], false);
+            }
+        }
+
+        function handleEditThumbnailSelect(event) {
+            if (event.target.files.length) {
+                handleThumbnailFile(event.target.files[0], true);
+            }
+        }
+
+        function handleThumbnailFile(file, isEdit) {
+            if (!file.type.startsWith('image/')) {
+                alert('이미지 파일만 업로드 가능합니다.');
+                return;
+            }
+
+            if (file.size > MAX_THUMBNAIL_SIZE) {
+                alert('썸네일 이미지는 5MB 이하여야 합니다.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                if (isEdit) {
+                    editThumbnail = e.target.result;
+                    editThumbnailChanged = true;
+                    editThumbnailRemoved = false;
+                    document.getElementById('editThumbnailPreviewImg').src = e.target.result;
+                    document.getElementById('editThumbnailPreviewImg').style.display = 'block';
+                    document.getElementById('editThumbnailPlaceholder').style.display = 'none';
+                    document.getElementById('editThumbnailRemoveBtn').style.display = 'flex';
+                } else {
+                    selectedThumbnail = e.target.result;
+                    document.getElementById('thumbnailPreviewImg').src = e.target.result;
+                    document.getElementById('thumbnailPreviewImg').style.display = 'block';
+                    document.getElementById('thumbnailPlaceholder').style.display = 'none';
+                    document.getElementById('thumbnailRemoveBtn').style.display = 'flex';
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeThumbnail() {
+            selectedThumbnail = null;
+            document.getElementById('thumbnailInput').value = '';
+            document.getElementById('thumbnailPreviewImg').style.display = 'none';
+            document.getElementById('thumbnailPlaceholder').style.display = 'flex';
+            document.getElementById('thumbnailRemoveBtn').style.display = 'none';
+        }
+
+        function removeEditThumbnail() {
+            editThumbnail = null;
+            editThumbnailChanged = true;
+            editThumbnailRemoved = true;
+            document.getElementById('editThumbnailInput').value = '';
+            document.getElementById('editThumbnailPreviewImg').style.display = 'none';
+            document.getElementById('editThumbnailPlaceholder').style.display = 'flex';
+            document.getElementById('editThumbnailRemoveBtn').style.display = 'none';
+        }
+
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const icons = {
+                pdf: '📋', html: '🌐', htm: '🌐',
+                png: '🖼️', jpg: '🖼️', jpeg: '🖼️', gif: '🖼️', webp: '🖼️', svg: '🖼️',
+                mp4: '🎬', mov: '🎬', avi: '🎬', webm: '🎬',
+                doc: '📝', docx: '📝', ppt: '📊', pptx: '📊', xls: '📈', xlsx: '📈'
+            };
+            return icons[ext] || '📄';
+        }
+
+        function getFileType(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            if (['pdf'].includes(ext)) return 'pdf';
+            if (['html', 'htm'].includes(ext)) return 'html';
+            if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(ext)) return 'image';
+            if (['mp4', 'mov', 'avi', 'webm'].includes(ext)) return 'video';
+            return 'other';
+        }
+
+        function generateKeywords(file) {
+            const filename = file.name.replace(/\.[^/.]+$/, '');
+            const words = filename.split(/[-_\s]+/).filter(w => w.length > 1);
+            const ext = file.name.split('.').pop().toLowerCase();
+
+            const typeKeywords = {
+                pdf: ['문서', '기획서'],
+                html: ['웹', '인터랙티브'],
+                png: ['이미지'], jpg: ['이미지'], jpeg: ['이미지'], gif: ['이미지'],
+                mp4: ['영상'], mov: ['영상'],
+                pptx: ['프레젠테이션'], ppt: ['프레젠테이션'],
+                xlsx: ['스프레드시트'], xls: ['스프레드시트']
+            };
+
+            const autoTags = [...words, ...(typeKeywords[ext] || [])];
+            autoTags.forEach(tag => {
+                if (tag && !currentTags.includes(tag)) {
+                    currentTags.push(tag);
+                }
+            });
+            renderTags('tagsContainer', currentTags, 'current');
+        }
+
+        // 태그 처리
+        function addTag(containerId, inputId, type) {
+            const input = document.getElementById(inputId);
+            const tag = input.value.trim();
+            const tags = type === 'current' ? currentTags : editTags;
+
+            if (tag && !tags.includes(tag)) {
+                tags.push(tag);
+                renderTags(containerId, tags, type);
+            }
+            input.value = '';
+        }
+
+        function removeTag(index, type) {
+            const tags = type === 'current' ? currentTags : editTags;
+            const containerId = type === 'current' ? 'tagsContainer' : 'editTagsContainer';
+            tags.splice(index, 1);
+            renderTags(containerId, tags, type);
+        }
+
+        function renderTags(containerId, tags, type) {
+            const container = document.getElementById(containerId);
+            const inputId = type === 'current' ? 'tagInput' : 'editTagInput';
+            container.innerHTML = tags.map((tag, i) => `
+                <div class="tag-item">
+                    <span>${tag}</span>
+                    <button class="tag-remove" onclick="removeTag(${i}, '${type}')">×</button>
+                </div>
+            `).join('') + `<input type="text" class="tag-input" id="${inputId}" placeholder="키워드 입력 후 Enter">`;
+
+            document.getElementById(inputId).addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addTag(containerId, inputId, type);
+                }
+            });
+        }
+
+        // 항목 저장
+        async function saveItem() {
+            const category = document.getElementById('addCategory').value;
+            const title = document.getElementById('itemTitle').value.trim();
+            const desc = document.getElementById('itemDesc').value.trim();
+            const link = document.getElementById('itemLink').value.trim();
+            const date = document.getElementById('itemDate').value;
+            const errorEl = document.getElementById('addError');
+            const saveBtn = document.getElementById('saveBtn');
+
+            if (!title) {
+                errorEl.textContent = '제목을 입력해주세요.';
+                errorEl.classList.add('show');
+                return;
+            }
+
+            if (!selectedFile && !link) {
+                errorEl.textContent = '파일을 업로드하거나 링크를 입력해주세요.';
+                errorEl.classList.add('show');
+                return;
+            }
+
+            const itemId = Date.now().toString();
+            const newItem = {
+                id: itemId,
+                category,
+                title,
+                description: desc,
+                date: date || new Date().toISOString().slice(0, 7),
+                tags: [...currentTags],
+                link: link || null,
+                fileType: selectedFile ? getFileType(selectedFile.name) : 'other',
+                fileName: selectedFile ? selectedFile.name : null,
+                hasFile: !!selectedFile,
+                hasThumbnail: !!selectedThumbnail
+            };
+
+            saveBtn.disabled = true;
+
+            try {
+                // 썸네일 저장
+                if (selectedThumbnail) {
+                    await saveFile(itemId + '_thumb', selectedThumbnail);
+                }
+
+                // 파일 저장
+                if (selectedFile) {
+                    document.getElementById('uploadProgress').classList.add('show');
+                    const fileData = await readFileAsBase64(selectedFile);
+                    await saveFile(itemId, fileData);
+                }
+
+                await saveMetadata(newItem);
+                
+                closeModal('addModal');
+                await renderAllSections();
+                updateUI();
+                updateStorageInfo();
+            } catch (error) {
+                errorEl.textContent = '파일 저장 중 오류가 발생했습니다.';
+                errorEl.classList.add('show');
+                saveBtn.disabled = false;
+            }
+        }
+
+        function readFileAsBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                
+                reader.onprogress = (e) => {
+                    if (e.lengthComputable) {
+                        const percent = Math.round((e.loaded / e.total) * 100);
+                        document.getElementById('progressFill').style.width = percent + '%';
+                        document.getElementById('progressText').textContent = `업로드 중... ${percent}%`;
+                    }
+                };
+
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(reader.error);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function updateItem() {
+            const itemId = document.getElementById('editItemId').value;
+            const category = document.getElementById('editCategory').value;
+            const title = document.getElementById('editTitle').value.trim();
+            const desc = document.getElementById('editDesc').value.trim();
+            const date = document.getElementById('editDate').value;
+            const errorEl = document.getElementById('editError');
+
+            if (!title) {
+                errorEl.textContent = '제목을 입력해주세요.';
+                errorEl.classList.add('show');
+                return;
+            }
+
+            const data = await getAllMetadata();
+            const item = data[category].find(i => i.id === itemId);
+            if (item) {
+                item.title = title;
+                item.description = desc;
+                item.date = date;
+                item.tags = [...editTags];
+
+                // 썸네일 업데이트
+                if (editThumbnailChanged) {
+                    if (editThumbnailRemoved) {
+                        // 썸네일 삭제
+                        await deleteFile(itemId + '_thumb');
+                        item.hasThumbnail = false;
+                    } else if (editThumbnail) {
+                        // 새 썸네일 저장
+                        await saveFile(itemId + '_thumb', editThumbnail);
+                        item.hasThumbnail = true;
+                    }
+                }
+
+                await saveMetadata(item);
+            }
+
+            closeModal('editModal');
+            await renderAllSections();
+            updateStorageInfo();
+        }
+
+        async function deleteItem() {
+            if (!confirm('정말 삭제하시겠습니까?')) return;
+
+            const itemId = document.getElementById('editItemId').value;
+            
+            await deleteMetadata(itemId);
+            await deleteFile(itemId);
+            await deleteFile(itemId + '_thumb'); // 썸네일도 삭제
+            
+            closeModal('editModal');
+            await renderAllSections();
+            updateUI();
+            updateStorageInfo();
+        }
+
+        // ============ 섹션 필터링 ============
+        function setFilter(filter) {
+            currentFilter = filter;
+            updateSectionVisibility();
+            updateNavTabsActive();
+        }
+        
+        function updateSectionVisibility() {
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => {
+                if (currentFilter === 'all') {
+                    section.style.display = 'block';
+                } else {
+                    section.style.display = section.id === currentFilter ? 'block' : 'none';
+                }
+            });
+            
+            // 섹션 추가 버튼: 로그인 + 전체 보기 시에만 표시
+            const addSectionBtn = document.getElementById('addSectionBtn');
+            if (addSectionBtn) {
+                const shouldShow = currentFilter === 'all' && isLoggedIn;
+                addSectionBtn.classList.toggle('show', shouldShow);
+            }
+        }
+        
+        function updateNavTabsActive() {
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                const tabFilter = tab.dataset.filter;
+                tab.classList.toggle('active', tabFilter === currentFilter);
+            });
+        }
+
+        // ============ 드래그앤드롭 순서 변경 ============
+        function setupDragAndDrop(card, category, itemId) {
+            card.setAttribute('draggable', 'true');
+            
+            card.addEventListener('dragstart', (e) => {
+                if (!isLoggedIn) {
+                    e.preventDefault();
+                    return;
+                }
+                draggedItem = { element: card, category, itemId };
+                card.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+            });
+            
+            card.addEventListener('dragend', () => {
+                card.classList.remove('dragging');
+                document.querySelectorAll('.portfolio-card').forEach(c => c.classList.remove('drag-over'));
+                draggedItem = null;
+            });
+            
+            card.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                if (!draggedItem || draggedItem.element === card) return;
+                if (draggedItem.category !== category) return;
+                card.classList.add('drag-over');
+            });
+            
+            card.addEventListener('dragleave', () => {
+                card.classList.remove('drag-over');
+            });
+            
+            card.addEventListener('drop', async (e) => {
+                e.preventDefault();
+                card.classList.remove('drag-over');
+                
+                if (!draggedItem || draggedItem.element === card) return;
+                if (draggedItem.category !== category) return;
+                
+                // 순서 변경
+                const grid = document.getElementById(`grid-${category}`);
+                const cards = Array.from(grid.querySelectorAll('.portfolio-card'));
+                const draggedIndex = cards.indexOf(draggedItem.element);
+                const dropIndex = cards.indexOf(card);
+                
+                if (draggedIndex < dropIndex) {
+                    card.after(draggedItem.element);
+                } else {
+                    card.before(draggedItem.element);
+                }
+                
+                // 새 순서 저장
+                await saveNewOrder(category);
+            });
+        }
+        
+        async function saveNewOrder(category) {
+            const grid = document.getElementById(`grid-${category}`);
+            const cards = Array.from(grid.querySelectorAll('.portfolio-card'));
+            const data = await getAllMetadata();
+            const items = data[category] || [];
+            
+            for (let i = 0; i < cards.length; i++) {
+                const itemId = cards[i].dataset.itemId;
+                const item = items.find(it => it.id === itemId);
+                if (item) {
+                    item.order = i;
+                    await saveMetadata(item);
+                }
+            }
+        }
+
+        // 렌더링
+        async function renderAllSections() {
+            const sections = await getSections();
+            const data = await getAllMetadata();
+            
+            sections.forEach(section => {
+                renderSection(section.id, data[section.id] || []);
+            });
+            
+            // 필터 상태에 따라 섹션 표시/숨김
+            updateSectionVisibility();
+        }
+
+        function renderSection(category, items) {
+            const grid = document.getElementById(`grid-${category}`);
+            if (!grid) return;
+            
+            const addCard = grid.querySelector('.add-card');
+
+            grid.querySelectorAll('.portfolio-card').forEach(card => card.remove());
+
+            // order 기준 정렬
+            items.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+            items.forEach(item => {
+                const card = createCard(item, category);
+                grid.insertBefore(card, addCard);
+            });
+
+            const countEl = document.getElementById(`sectionCount-${category}`);
+            if (countEl) countEl.textContent = `(${items.length})`;
+            
+            const navCountEl = document.getElementById(`navCount-${category}`);
+            if (navCountEl) navCountEl.textContent = items.length;
+        }
+
+        function createCard(item, category) {
+            const card = document.createElement('div');
+            card.className = 'portfolio-card';
+            card.dataset.itemId = item.id;
+            card.dataset.hasThumbnail = item.hasThumbnail ? 'true' : 'false';
+            
+            card.innerHTML = `
+                <div class="drag-handle ${isLoggedIn ? 'show' : ''}" title="드래그하여 순서 변경">⋮⋮</div>
+                <button class="card-edit-btn ${isLoggedIn ? 'show' : ''}" onclick="event.stopPropagation(); openEditModal('${category}', '${item.id}')">⚙️</button>
+                <div class="card-link" onclick="openItem('${item.id}', '${item.link || ''}', ${item.hasFile})">
+                    <div class="card-thumbnail ${item.fileType}" id="thumb-${item.id}">
+                        <span class="thumb-icon">${getFileIcon(item.fileName || 'file.other')}</span>
+                        <span class="card-badge ${item.fileType}">${item.fileType.toUpperCase()}</span>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">${item.title}</h3>
+                        <p class="card-description">${item.description || '설명 없음'}</p>
+                        <div class="card-meta">
+                            <span class="card-date">${item.date}</span>
+                            <div class="card-tags">
+                                ${(item.tags || []).slice(0, 3).map(t => `<span class="card-tag">${t}</span>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 썸네일이 있으면 비동기로 로드
+            if (item.hasThumbnail) {
+                loadCardThumbnail(item.id);
+            }
+            
+            // 드래그앤드롭 설정
+            setupDragAndDrop(card, category, item.id);
+
+            return card;
+        }
+
+        async function loadCardThumbnail(itemId) {
+            const thumbnailData = await getFile(itemId + '_thumb');
+            if (thumbnailData) {
+                const thumbContainer = document.getElementById(`thumb-${itemId}`);
+                if (thumbContainer) {
+                    const icon = thumbContainer.querySelector('.thumb-icon');
+                    if (icon) icon.style.display = 'none';
+                    
+                    const img = document.createElement('img');
+                    img.src = thumbnailData;
+                    img.style.cssText = 'width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;';
+                    thumbContainer.style.position = 'relative';
+                    thumbContainer.insertBefore(img, thumbContainer.firstChild);
+                }
+            }
+        }
+
+        async function openItem(id, link, hasFile) {
+            if (link) {
+                window.open(link, '_blank');
+            } else if (hasFile) {
+                const fileData = await getFile(id);
+                if (fileData) {
+                    // Data URI를 Blob으로 변환
+                    const blob = dataURItoBlob(fileData);
+                    const blobURL = URL.createObjectURL(blob);
+                    
+                    // Blob URL로 새 창에서 열기
+                    window.open(blobURL, '_blank');
+                    
+                    // 메모리 누수 방지를 위해 일정 시간 후 URL 해제
+                    setTimeout(() => URL.revokeObjectURL(blobURL), 60000);
+                }
+            }
+        }
+
+        // Data URI를 Blob으로 변환하는 함수
+        function dataURItoBlob(dataURI) {
+            // Data URI 파싱
+            const byteString = atob(dataURI.split(',')[1]);
+            const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+            
+            // ArrayBuffer 생성
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+            
+            for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+            
+            return new Blob([ab], { type: mimeString });
+        }
+
+        function updateUI() {
+            // 추가 버튼 표시/숨김
+            document.querySelectorAll('.add-card').forEach(card => {
+                card.classList.toggle('show', isLoggedIn);
+            });
+
+            // 수정 버튼 표시/숨김
+            document.querySelectorAll('.card-edit-btn').forEach(btn => {
+                btn.classList.toggle('show', isLoggedIn);
+            });
+
+            // 드래그 핸들 표시/숨김
+            document.querySelectorAll('.drag-handle').forEach(handle => {
+                handle.classList.toggle('show', isLoggedIn);
+            });
+
+            // 섹션 수정 버튼 표시/숨김
+            document.querySelectorAll('.section-edit-btn').forEach(btn => {
+                btn.classList.toggle('show', isLoggedIn);
+            });
+
+            // 섹션 추가 버튼은 updateSectionVisibility에서 처리
+            updateSectionVisibility();
+
+            // 프로필 이미지 편집 가능 표시
+            const profileImage = document.getElementById('profileImage');
+            if (profileImage) profileImage.classList.toggle('editable', isLoggedIn);
+
+            // 자기소개 편집 가능 표시
+            const introText = document.getElementById('introText');
+            if (introText) introText.classList.toggle('editable', isLoggedIn);
+        }
+
+        function setupEventListeners() {
+            document.getElementById('tagInput').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); addTag('tagsContainer', 'tagInput', 'current'); }
+            });
+            document.getElementById('editTagInput').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); addTag('editTagsContainer', 'editTagInput', 'edit'); }
+            });
+
+            const uploadArea = document.getElementById('fileUploadArea');
+            uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+            uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+            });
+
+            document.getElementById('loginPassword').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') login();
+            });
+
+            // 프로필 이미지 클릭
+            document.getElementById('profileImage').addEventListener('click', () => {
+                if (isLoggedIn) openProfileModal();
+            });
+
+            // 자기소개 클릭
+            document.getElementById('introText').addEventListener('click', () => {
+                if (isLoggedIn) openIntroModal();
+            });
+        }
+
+        // 초기화
+        async function init() {
+            await initDB();
+            checkSession();
+            await loadProfile();
+            await loadIntro();
+            await renderSectionsAndNav();
+            await renderAllSections();
+            setupEventListeners();
+            updateUI();
+            updateLoginUI();
+        }
+
+        init();
+    </script>
+</body>
+</html>
