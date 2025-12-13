@@ -1220,49 +1220,17 @@
     <!-- 로그인 모달 -->
     <div class="modal-overlay" id="loginModal">
         <div class="modal">
-            <h2 class="modal-title">🔐 로그인</h2>
-            <div id="loginSetupForm">
-                <p style="text-align:center; color: var(--text-mid); margin-bottom: 20px;">
-                    비밀번호가 설정되지 않았습니다.<br>새 비밀번호를 설정해주세요.
-                </p>
-                <div class="form-group">
-                    <label class="form-label">새 비밀번호</label>
-                    <input type="password" class="form-input" id="setupPassword" placeholder="비밀번호 입력">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">비밀번호 확인</label>
-                    <input type="password" class="form-input" id="setupPasswordConfirm" placeholder="비밀번호 재입력">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">비밀번호 힌트 (찾기용)</label>
-                    <input type="text" class="form-input" id="setupHint" placeholder="본인만 아는 힌트">
-                </div>
-                <div class="form-error" id="setupError"></div>
-                <button class="form-btn primary" onclick="setupPassword()">비밀번호 설정</button>
+            <h2 class="modal-title">🔐 관리자 로그인</h2>
+            <div class="form-group">
+                <label class="form-label">이메일</label>
+                <input type="email" class="form-input" id="loginEmail" placeholder="이메일 입력">
             </div>
-            <div id="loginForm" style="display: none;">
-                <div class="form-group">
-                    <label class="form-label">비밀번호</label>
-                    <input type="password" class="form-input" id="loginPassword" placeholder="비밀번호 입력">
-                </div>
-                <div class="form-error" id="loginError"></div>
-                <button class="form-btn primary" onclick="login()">로그인</button>
-                <span class="form-link" onclick="showForgotPassword()">비밀번호를 잊으셨나요?</span>
+            <div class="form-group">
+                <label class="form-label">비밀번호</label>
+                <input type="password" class="form-input" id="loginPassword" placeholder="비밀번호 입력">
             </div>
-            <div id="forgotForm" style="display: none;">
-                <p style="text-align:center; color: var(--text-mid); margin-bottom: 16px;" id="hintDisplay"></p>
-                <div class="form-group">
-                    <label class="form-label">힌트 답변</label>
-                    <input type="text" class="form-input" id="hintAnswer" placeholder="힌트에 해당하는 답변">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">새 비밀번호</label>
-                    <input type="password" class="form-input" id="newPassword" placeholder="새 비밀번호">
-                </div>
-                <div class="form-error" id="forgotError"></div>
-                <button class="form-btn primary" onclick="resetPassword()">비밀번호 재설정</button>
-                <span class="form-link" onclick="showLoginForm()">← 로그인으로 돌아가기</span>
-            </div>
+            <div class="form-error" id="loginError"></div>
+            <button class="form-btn primary" onclick="login()">로그인</button>
             <button class="form-btn secondary" style="margin-top: 12px;" onclick="closeModal('loginModal')">취소</button>
         </div>
     </div>
@@ -1271,23 +1239,10 @@
     <div class="modal-overlay" id="settingsModal">
         <div class="modal">
             <h2 class="modal-title">⚙️ 설정</h2>
-            <div class="form-group">
-                <label class="form-label">현재 비밀번호</label>
-                <input type="password" class="form-input" id="currentPw" placeholder="현재 비밀번호">
-            </div>
-            <div class="form-group">
-                <label class="form-label">새 비밀번호</label>
-                <input type="password" class="form-input" id="newPw" placeholder="새 비밀번호 (변경 시에만)">
-            </div>
-            <div class="form-group">
-                <label class="form-label">새 비밀번호 힌트</label>
-                <input type="text" class="form-input" id="newHint" placeholder="새 힌트 (변경 시에만)">
-            </div>
-            <div class="form-error" id="settingsError"></div>
-            <button class="form-btn primary" onclick="changePassword()">변경 저장</button>
-            
-            
-            <button class="form-btn secondary" onclick="closeModal('settingsModal')">취소</button>
+            <p style="text-align: center; color: var(--text-mid); margin-bottom: 20px;">
+                비밀번호 변경은 Firebase Console에서 가능합니다.
+            </p>
+            <button class="form-btn secondary" onclick="closeModal('settingsModal')">닫기</button>
         </div>
     </div>
 
@@ -1421,8 +1376,9 @@
 
 
     <!-- Firebase SDK -->
-    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     
     <script>
         // ============ Firebase 설정 ============
@@ -2848,140 +2804,53 @@
 
         // ============ UI 로직 ============
         function checkSession() {
-            isLoggedIn = sessionStorage.getItem('portfolio_session') === 'true';
-            updateLoginUI();
-        }
-
-        async function setupPassword() {
-            const pw = document.getElementById('setupPassword').value;
-            const pwConfirm = document.getElementById('setupPasswordConfirm').value;
-            const hint = document.getElementById('setupHint').value;
-            const errorEl = document.getElementById('setupError');
-
-            if (!pw || pw.length < 4) {
-                errorEl.textContent = '비밀번호는 4자 이상이어야 합니다.';
-                errorEl.classList.add('show');
-                return;
-            }
-            if (pw !== pwConfirm) {
-                errorEl.textContent = '비밀번호가 일치하지 않습니다.';
-                errorEl.classList.add('show');
-                return;
-            }
-            if (!hint) {
-                errorEl.textContent = '비밀번호 힌트를 입력해주세요.';
-                errorEl.classList.add('show');
-                return;
-            }
-
-            await setAuth(pw, hint);
-            isLoggedIn = true;
-            sessionStorage.setItem('portfolio_session', 'true');
-            closeModal('loginModal');
-            updateLoginUI();
-            updateUI();
-            alert('비밀번호가 설정되었습니다. 편집 모드가 활성화되었습니다.');
+            // Firebase Auth 상태 변경 리스너
+            firebase.auth().onAuthStateChanged((user) => {
+                isLoggedIn = !!user;
+                updateLoginUI();
+                updateUI();
+            });
         }
 
         async function login() {
-            const pw = document.getElementById('loginPassword').value;
-            const auth = await getAuth();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
             const errorEl = document.getElementById('loginError');
 
-            if (pw === auth?.password) {
-                isLoggedIn = true;
-                sessionStorage.setItem('portfolio_session', 'true');
+            if (!email || !password) {
+                errorEl.textContent = '이메일과 비밀번호를 입력해주세요.';
+                errorEl.classList.add('show');
+                return;
+            }
+
+            try {
+                await firebase.auth().signInWithEmailAndPassword(email, password);
                 closeModal('loginModal');
-                updateLoginUI();
-                updateUI();
-            } else {
-                errorEl.textContent = '비밀번호가 올바르지 않습니다.';
+                document.getElementById('loginEmail').value = '';
+                document.getElementById('loginPassword').value = '';
+            } catch (error) {
+                let message = '로그인에 실패했습니다.';
+                if (error.code === 'auth/user-not-found') {
+                    message = '등록되지 않은 이메일입니다.';
+                } else if (error.code === 'auth/wrong-password') {
+                    message = '비밀번호가 올바르지 않습니다.';
+                } else if (error.code === 'auth/invalid-email') {
+                    message = '올바른 이메일 형식이 아닙니다.';
+                }
+                errorEl.textContent = message;
                 errorEl.classList.add('show');
             }
         }
 
         function logout() {
-            isLoggedIn = false;
-            sessionStorage.removeItem('portfolio_session');
-            updateLoginUI();
-            updateUI();
+            firebase.auth().signOut();
         }
 
-        async function showForgotPassword() {
-            const auth = await getAuth();
-            document.getElementById('loginForm').style.display = 'none';
-            document.getElementById('forgotForm').style.display = 'block';
-            document.getElementById('hintDisplay').textContent = `힌트: "${auth?.hint || '설정된 힌트 없음'}"`;
-        }
-
-        function showLoginForm() {
-            document.getElementById('forgotForm').style.display = 'none';
-            document.getElementById('loginForm').style.display = 'block';
-        }
-
-        async function resetPassword() {
-            const auth = await getAuth();
-            const hintAnswer = document.getElementById('hintAnswer').value;
-            const newPw = document.getElementById('newPassword').value;
-            const errorEl = document.getElementById('forgotError');
-
-            if (hintAnswer.toLowerCase() === auth?.hint?.toLowerCase()) {
-                if (newPw.length >= 4) {
-                    await setAuth(newPw, auth.hint);
-                    alert('비밀번호가 재설정되었습니다.');
-                    showLoginForm();
-                    document.getElementById('loginPassword').value = '';
-                } else {
-                    errorEl.textContent = '새 비밀번호는 4자 이상이어야 합니다.';
-                    errorEl.classList.add('show');
-                }
-            } else {
-                errorEl.textContent = '힌트 답변이 올바르지 않습니다.';
-                errorEl.classList.add('show');
-            }
-        }
-
-        async function changePassword() {
-            const auth = await getAuth();
-            const currentPw = document.getElementById('currentPw').value;
-            const newPw = document.getElementById('newPw').value;
-            const newHint = document.getElementById('newHint').value;
-            const errorEl = document.getElementById('settingsError');
-
-            if (currentPw !== auth?.password) {
-                errorEl.textContent = '현재 비밀번호가 올바르지 않습니다.';
-                errorEl.classList.add('show');
-                return;
-            }
-
-            const finalPw = newPw || auth.password;
-            const finalHint = newHint || auth.hint;
-
-            if (newPw && newPw.length < 4) {
-                errorEl.textContent = '새 비밀번호는 4자 이상이어야 합니다.';
-                errorEl.classList.add('show');
-                return;
-            }
-
-            await setAuth(finalPw, finalHint);
-            alert('설정이 저장되었습니다.');
-            closeModal('settingsModal');
-        }
-
-        async function updateLoginUI() {
-            const auth = await getAuth();
+        function updateLoginUI() {
             document.getElementById('loginBtn').style.display = isLoggedIn ? 'none' : 'block';
             document.getElementById('logoutBtn').style.display = isLoggedIn ? 'block' : 'none';
             document.getElementById('settingsBtn').style.display = isLoggedIn ? 'block' : 'none';
             document.getElementById('loggedInStatus').style.display = isLoggedIn ? 'flex' : 'none';
-
-            if (auth) {
-                document.getElementById('loginSetupForm').style.display = 'none';
-                document.getElementById('loginForm').style.display = 'block';
-            } else {
-                document.getElementById('loginSetupForm').style.display = 'block';
-                document.getElementById('loginForm').style.display = 'none';
-            }
         }
 
         function openModal(id) {
@@ -3184,6 +3053,10 @@
                 } else if (editModal.classList.contains('active')) {
                     handleEditThumbnailPaste(e);
                 }
+            });
+
+            document.getElementById('loginEmail').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') document.getElementById('loginPassword').focus();
             });
 
             document.getElementById('loginPassword').addEventListener('keydown', (e) => {
