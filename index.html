@@ -2815,11 +2815,12 @@
 
         // ============ 인증 관련 ============
         function checkSession() {
-            const session = sessionStorage.getItem('portfolioAuth');
-            if (session) {
-                isLoggedIn = true;
+            // Firebase Auth 상태 변경 리스너
+            firebase.auth().onAuthStateChanged((user) => {
+                isLoggedIn = !!user;
                 updateAuthUI();
-            }
+                updateUI();
+            });
         }
 
         async function login() {
@@ -2834,30 +2835,26 @@
             }
 
             try {
-                const auth = await getAuth();
-                if (auth && auth.password === password) {
-                    isLoggedIn = true;
-                    sessionStorage.setItem('portfolioAuth', 'true');
-                    updateAuthUI();
-                    closeModal('loginModal');
-                    await renderSectionsAndNav();
-                    await renderAllSections();
-                } else {
-                    errorEl.textContent = '비밀번호가 일치하지 않습니다.';
-                    errorEl.classList.add('show');
-                }
+                await firebase.auth().signInWithEmailAndPassword(email, password);
+                closeModal('loginModal');
+                document.getElementById('loginEmail').value = '';
+                document.getElementById('loginPassword').value = '';
             } catch (error) {
-                errorEl.textContent = '로그인 중 오류가 발생했습니다.';
+                let message = '로그인에 실패했습니다.';
+                if (error.code === 'auth/user-not-found') {
+                    message = '등록되지 않은 이메일입니다.';
+                } else if (error.code === 'auth/wrong-password') {
+                    message = '비밀번호가 올바르지 않습니다.';
+                } else if (error.code === 'auth/invalid-email') {
+                    message = '올바른 이메일 형식이 아닙니다.';
+                }
+                errorEl.textContent = message;
                 errorEl.classList.add('show');
             }
         }
 
         function logout() {
-            isLoggedIn = false;
-            sessionStorage.removeItem('portfolioAuth');
-            updateAuthUI();
-            renderSectionsAndNav();
-            renderAllSections();
+            firebase.auth().signOut();
         }
 
         function updateAuthUI() {
