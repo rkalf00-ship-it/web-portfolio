@@ -517,6 +517,7 @@
             position: relative;
             cursor: default;
             transition: all 0.2s;
+            white-space: pre-line;
         }
 
         .intro-text.editable { cursor: pointer; }
@@ -1384,6 +1385,27 @@
                 </div>
             </div>
             <div class="form-group">
+                <label class="form-label">위아래 여백</label>
+                <div class="size-slider-group">
+                    <input type="range" id="introPaddingSlider" min="1" max="40" step="1" value="24" oninput="updateIntroPaddingPreview(this.value)">
+                    <div class="size-value" id="introPaddingValue">24px</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">폰트 크기</label>
+                <div class="size-slider-group">
+                    <input type="range" id="introFontSizeSlider" min="0.7" max="1.5" step="0.05" value="0.95" oninput="updateIntroFontSizePreview(this.value)">
+                    <div class="size-value" id="introFontSizeValue">0.95rem</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">볼드체</label>
+                <div class="align-btn-group">
+                    <button type="button" class="align-btn" id="boldOff" onclick="setIntroBold(false)" title="일반">가</button>
+                    <button type="button" class="align-btn" id="boldOn" onclick="setIntroBold(true)" title="볼드" style="font-weight: 700;">가</button>
+                </div>
+            </div>
+            <div class="form-group">
                 <label class="form-label">자기소개</label>
                 <textarea class="form-textarea" id="introTextInput" rows="6" placeholder="자기소개를 입력하세요"></textarea>
             </div>
@@ -1612,6 +1634,7 @@
         // ============ Firebase 설정 ============
         const firebaseConfig = {
             apiKey: "AIzaSyBZ5mWnlloXbbcEc0V5QZ_N4vguDWtiKb0",
+            authDomain: "web-portfolio-e7e05.firebaseapp.com",
             databaseURL: "https://web-portfolio-e7e05-default-rtdb.firebaseio.com/"
         };
 
@@ -1633,6 +1656,9 @@
 
         // 자기소개 정렬 상태
         let currentIntroAlign = 'left';
+        let currentIntroPadding = 24;
+        let currentIntroFontSize = 0.95;
+        let currentIntroBold = false;
 
         // 타이틀 스타일 상태
         let mainTitleColor = '#c9a86c';
@@ -2186,7 +2212,7 @@
             }
         }
 
-        // ============ 자기소개 정렬 관련 함수 ============
+        // ============ 자기소개 정렬 및 여백 관련 함수 ============
         function setIntroAlign(align) {
             currentIntroAlign = align;
             
@@ -2199,6 +2225,28 @@
             document.getElementById('introTextInput').style.textAlign = align;
         }
 
+        function updateIntroPaddingPreview(value) {
+            currentIntroPadding = parseInt(value);
+            document.getElementById('introPaddingValue').textContent = value + 'px';
+        }
+
+        function updateIntroFontSizePreview(value) {
+            currentIntroFontSize = parseFloat(value);
+            document.getElementById('introFontSizeValue').textContent = value + 'rem';
+            document.getElementById('introTextInput').style.fontSize = value + 'rem';
+        }
+
+        function setIntroBold(isBold) {
+            currentIntroBold = isBold;
+            
+            // 버튼 활성화 상태 업데이트
+            document.getElementById('boldOff').classList.toggle('active', !isBold);
+            document.getElementById('boldOn').classList.toggle('active', isBold);
+            
+            // 텍스트 입력창 볼드 미리보기
+            document.getElementById('introTextInput').style.fontWeight = isBold ? '700' : '400';
+        }
+
         async function openIntroModal() {
             if (!isLoggedIn) return;
             
@@ -2207,12 +2255,25 @@
             if (typeof introData === 'object' && introData !== null) {
                 document.getElementById('introTextInput').value = introData.text || '';
                 currentIntroAlign = introData.align || 'left';
+                currentIntroPadding = introData.padding || 24;
+                currentIntroFontSize = introData.fontSize || 0.95;
+                currentIntroBold = introData.bold || false;
             } else {
                 document.getElementById('introTextInput').value = introData || document.getElementById('introContent').textContent.trim();
                 currentIntroAlign = 'left';
+                currentIntroPadding = 24;
+                currentIntroFontSize = 0.95;
+                currentIntroBold = false;
             }
             
             setIntroAlign(currentIntroAlign);
+            document.getElementById('introPaddingSlider').value = currentIntroPadding;
+            document.getElementById('introPaddingValue').textContent = currentIntroPadding + 'px';
+            document.getElementById('introFontSizeSlider').value = currentIntroFontSize;
+            document.getElementById('introFontSizeValue').textContent = currentIntroFontSize + 'rem';
+            document.getElementById('introTextInput').style.fontSize = currentIntroFontSize + 'rem';
+            setIntroBold(currentIntroBold);
+            
             openModal('introModal');
         }
 
@@ -2220,13 +2281,21 @@
             const introText = document.getElementById('introTextInput').value.trim();
             const introData = {
                 text: introText,
-                align: currentIntroAlign
+                align: currentIntroAlign,
+                padding: currentIntroPadding,
+                fontSize: currentIntroFontSize,
+                bold: currentIntroBold
             };
             await saveIntroData(introData);
             
             const introContent = document.getElementById('introContent');
+            const introTextEl = document.getElementById('introText');
             introContent.textContent = introText;
-            document.getElementById('introText').style.textAlign = currentIntroAlign;
+            introTextEl.style.textAlign = currentIntroAlign;
+            introTextEl.style.paddingTop = currentIntroPadding + 'px';
+            introTextEl.style.paddingBottom = currentIntroPadding + 'px';
+            introTextEl.style.fontSize = currentIntroFontSize + 'rem';
+            introTextEl.style.fontWeight = currentIntroBold ? '700' : '400';
             
             closeModal('introModal');
         }
@@ -2239,6 +2308,10 @@
             if (typeof introData === 'object' && introData !== null) {
                 introContent.textContent = introData.text || '';
                 introText.style.textAlign = introData.align || 'left';
+                introText.style.paddingTop = (introData.padding || 24) + 'px';
+                introText.style.paddingBottom = (introData.padding || 24) + 'px';
+                introText.style.fontSize = (introData.fontSize || 0.95) + 'rem';
+                introText.style.fontWeight = introData.bold ? '700' : '400';
             } else if (introData) {
                 introContent.textContent = introData;
                 introText.style.textAlign = 'left';
