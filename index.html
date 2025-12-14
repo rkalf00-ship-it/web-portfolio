@@ -340,6 +340,42 @@
             background: var(--pastel-red);
         }
 
+        /* 프로필 이미지 업로드 영역 - 원본 크기 지원 */
+        .profile-upload-area {
+            width: 100%;
+            min-height: 150px;
+            border: 2px dashed var(--border-light);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--bg-section);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-upload-area:hover {
+            border-color: var(--pastel-gold);
+            background: var(--pastel-gold-light);
+        }
+
+        .profile-upload-area:focus {
+            outline: none;
+            border-color: var(--pastel-blue);
+            background: var(--pastel-blue-light);
+            box-shadow: 0 0 0 3px rgba(168, 197, 226, 0.3);
+        }
+
+        .profile-preview-img {
+            max-width: 100%;
+            max-height: 300px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+        }
+
         /* 업로드 진행 바 */
         .upload-progress {
             display: none;
@@ -421,8 +457,6 @@
         .profile-image {
             min-width: 120px;
             min-height: 120px;
-            max-width: 200px;
-            max-height: 260px;
             border-radius: 12px;
             background: linear-gradient(135deg, var(--pastel-gold-light), var(--pastel-gold));
             display: flex;
@@ -439,6 +473,9 @@
         .profile-image.has-image {
             width: auto;
             height: auto;
+            max-width: 400px;
+            max-height: 400px;
+            background: transparent;
         }
 
         .profile-image.editable { cursor: pointer; }
@@ -456,6 +493,15 @@
         }
 
         .profile-image.editable:hover .profile-edit-overlay { display: flex; }
+
+        /* 프로필 이미지 원본 크기 */
+        #profileImg {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            border-radius: 8px;
+        }
 
         .intro-text {
             max-width: 700px;
@@ -491,6 +537,128 @@
 
         .intro-text.editable:hover .intro-edit-overlay { display: block; }
         .intro-text.editable:hover #introContent { opacity: 0.3; }
+
+        /* 텍스트 정렬 버튼 그룹 */
+        .align-btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .align-btn {
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            background: var(--bg-section);
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .align-btn:hover {
+            border-color: var(--pastel-gold);
+            background: var(--pastel-gold-light);
+        }
+
+        .align-btn.active {
+            background: var(--pastel-gold);
+            border-color: var(--pastel-gold-dark);
+        }
+
+        /* 색상 선택기 - 팔레트 스타일 */
+        .color-picker-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .color-palette {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .color-palette-item {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .color-palette-item:hover {
+            transform: scale(1.1);
+        }
+
+        .color-palette-item.active {
+            border-color: var(--text-dark);
+            box-shadow: 0 0 0 2px white, 0 0 0 4px var(--text-dark);
+        }
+
+        .color-input-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .color-input-row input[type="color"] {
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 2px;
+        }
+
+        .color-input-row input[type="text"] {
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: monospace;
+        }
+
+        /* 폰트 크기 선택 */
+        .size-slider-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .size-slider-group input[type="range"] {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--border-light);
+            appearance: none;
+            cursor: pointer;
+        }
+
+        .size-slider-group input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--pastel-gold);
+            border: 2px solid white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            cursor: pointer;
+        }
+
+        .size-value {
+            min-width: 60px;
+            padding: 6px 10px;
+            background: var(--bg-section);
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-mid);
+        }
 
         /* 드래그앤드롭 */
         .portfolio-card.dragging {
@@ -1048,7 +1216,7 @@
             <div class="profile-section">
                 <div class="profile-image" id="profileImage">
                     <span id="profileEmoji">🎮</span>
-                    <img id="profileImg" style="display: none; max-width: 200px; max-height: 260px; width: auto; height: auto; border-radius: 8px;">
+                    <img id="profileImg" style="display: none;">
                     <div class="profile-edit-overlay" id="profileEditOverlay">📷</div>
                 </div>
                 <div>
@@ -1083,7 +1251,7 @@
             </div>
             <div class="contact-title" id="contactTitle">CONTACT</div>
             <div class="contact-links" id="contactLinks">
-                <a href="/cdn-cgi/l/email-protection#50293f25227d353d31393c103528313d203c357e333f3d" class="contact-link" id="contactEmail">✉️ Email : <span class="__cf_email__" data-cfemail="0b72647e79266e666a62674b6e736a667b676e25686466">[email&#160;protected]</span></a>
+                <a href="mailto:example@email.com" class="contact-link" id="contactEmail">✉️ Email : example@email.com</a>
                 <a href="#" class="contact-link" id="contactGithub" style="display: none;">💻 GitHub</a>
                 <a href="#" class="contact-link" id="contactLinkedin" style="display: none;">💼 LinkedIn</a>
             </div>
@@ -1127,13 +1295,13 @@
         <div class="modal">
             <h2 class="modal-title">👤 프로필 수정</h2>
             <div class="form-group">
-                <label class="form-label">프로필 이미지</label>
-                <div class="thumbnail-upload-area" id="profileImageUpload" onclick="document.getElementById('profileImageInput').click()">
+                <label class="form-label">프로필 이미지 (클릭 또는 Ctrl+V)</label>
+                <div class="profile-upload-area" id="profileImageUpload" onclick="document.getElementById('profileImageInput').click()" tabindex="0">
                     <div class="thumbnail-placeholder" id="profileImagePlaceholder">
                         <span>🖼️</span>
-                        <span>클릭하여 이미지 업로드</span>
+                        <span>클릭 또는 Ctrl+V로 이미지 업로드</span>
                     </div>
-                    <img class="thumbnail-preview-img" id="profileImagePreview" style="display: none;">
+                    <img class="profile-preview-img" id="profileImagePreview" style="display: none;">
                     <button type="button" class="thumbnail-remove-btn" id="profileImageRemoveBtn" onclick="event.stopPropagation(); removeProfileImage()" style="display: none;">×</button>
                 </div>
                 <input type="file" id="profileImageInput" style="display: none;" accept="image/*" onchange="handleProfileImageSelect(event)">
@@ -1143,8 +1311,60 @@
                 <input type="text" class="form-input" id="profileTitle" placeholder="PORTFOLIO">
             </div>
             <div class="form-group">
+                <label class="form-label">메인 타이틀 색상</label>
+                <div class="color-picker-group">
+                    <div class="color-palette" id="mainTitleColorPalette">
+                        <div class="color-palette-item" style="background: #c9a86c;" data-color="#c9a86c" onclick="selectTitleColor('main', '#c9a86c')"></div>
+                        <div class="color-palette-item" style="background: #4a4a4a;" data-color="#4a4a4a" onclick="selectTitleColor('main', '#4a4a4a')"></div>
+                        <div class="color-palette-item" style="background: #7ba3c9;" data-color="#7ba3c9" onclick="selectTitleColor('main', '#7ba3c9')"></div>
+                        <div class="color-palette-item" style="background: #7cb88e;" data-color="#7cb88e" onclick="selectTitleColor('main', '#7cb88e')"></div>
+                        <div class="color-palette-item" style="background: #a87bc2;" data-color="#a87bc2" onclick="selectTitleColor('main', '#a87bc2')"></div>
+                        <div class="color-palette-item" style="background: #c98a8a;" data-color="#c98a8a" onclick="selectTitleColor('main', '#c98a8a')"></div>
+                        <div class="color-palette-item" style="background: #2c3e50;" data-color="#2c3e50" onclick="selectTitleColor('main', '#2c3e50')"></div>
+                        <div class="color-palette-item" style="background: #e74c3c;" data-color="#e74c3c" onclick="selectTitleColor('main', '#e74c3c')"></div>
+                    </div>
+                    <div class="color-input-row">
+                        <input type="color" id="mainTitleColorPicker" value="#c9a86c" onchange="selectTitleColor('main', this.value)">
+                        <input type="text" id="mainTitleColorCode" placeholder="#c9a86c" oninput="handleColorCodeInput('main', this.value)">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">메인 타이틀 크기</label>
+                <div class="size-slider-group">
+                    <input type="range" id="mainTitleSize" min="1.5" max="4" step="0.1" value="2.8" oninput="updateTitleSizePreview('main', this.value)">
+                    <div class="size-value" id="mainTitleSizeValue">2.8rem</div>
+                </div>
+            </div>
+            <div class="form-group">
                 <label class="form-label">서브 타이틀</label>
                 <input type="text" class="form-input" id="profileSubtitle" placeholder="GAME DESIGNER">
+            </div>
+            <div class="form-group">
+                <label class="form-label">서브 타이틀 색상</label>
+                <div class="color-picker-group">
+                    <div class="color-palette" id="subTitleColorPalette">
+                        <div class="color-palette-item" style="background: #6a6a6a;" data-color="#6a6a6a" onclick="selectTitleColor('sub', '#6a6a6a')"></div>
+                        <div class="color-palette-item" style="background: #4a4a4a;" data-color="#4a4a4a" onclick="selectTitleColor('sub', '#4a4a4a')"></div>
+                        <div class="color-palette-item" style="background: #7ba3c9;" data-color="#7ba3c9" onclick="selectTitleColor('sub', '#7ba3c9')"></div>
+                        <div class="color-palette-item" style="background: #7cb88e;" data-color="#7cb88e" onclick="selectTitleColor('sub', '#7cb88e')"></div>
+                        <div class="color-palette-item" style="background: #a87bc2;" data-color="#a87bc2" onclick="selectTitleColor('sub', '#a87bc2')"></div>
+                        <div class="color-palette-item" style="background: #c98a8a;" data-color="#c98a8a" onclick="selectTitleColor('sub', '#c98a8a')"></div>
+                        <div class="color-palette-item" style="background: #c9a86c;" data-color="#c9a86c" onclick="selectTitleColor('sub', '#c9a86c')"></div>
+                        <div class="color-palette-item" style="background: #2c3e50;" data-color="#2c3e50" onclick="selectTitleColor('sub', '#2c3e50')"></div>
+                    </div>
+                    <div class="color-input-row">
+                        <input type="color" id="subTitleColorPicker" value="#6a6a6a" onchange="selectTitleColor('sub', this.value)">
+                        <input type="text" id="subTitleColorCode" placeholder="#6a6a6a" oninput="handleColorCodeInput('sub', this.value)">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">서브 타이틀 크기</label>
+                <div class="size-slider-group">
+                    <input type="range" id="subTitleSize" min="0.8" max="2" step="0.1" value="1.1" oninput="updateTitleSizePreview('sub', this.value)">
+                    <div class="size-value" id="subTitleSizeValue">1.1rem</div>
+                </div>
             </div>
             <button class="form-btn primary" onclick="saveProfile()">저장</button>
             <button class="form-btn secondary" onclick="closeModal('profileModal')">취소</button>
@@ -1155,6 +1375,14 @@
     <div class="modal-overlay" id="introModal">
         <div class="modal">
             <h2 class="modal-title">✏️ 자기소개 수정</h2>
+            <div class="form-group">
+                <label class="form-label">텍스트 정렬</label>
+                <div class="align-btn-group">
+                    <button type="button" class="align-btn" id="alignLeft" onclick="setIntroAlign('left')" title="왼쪽 정렬">⬅</button>
+                    <button type="button" class="align-btn" id="alignCenter" onclick="setIntroAlign('center')" title="중앙 정렬">⬌</button>
+                    <button type="button" class="align-btn" id="alignRight" onclick="setIntroAlign('right')" title="오른쪽 정렬">➡</button>
+                </div>
+            </div>
             <div class="form-group">
                 <label class="form-label">자기소개</label>
                 <textarea class="form-textarea" id="introTextInput" rows="6" placeholder="자기소개를 입력하세요"></textarea>
@@ -1403,6 +1631,15 @@
         let currentFilter = 'all';
         let draggedItem = null;
 
+        // 자기소개 정렬 상태
+        let currentIntroAlign = 'left';
+
+        // 타이틀 스타일 상태
+        let mainTitleColor = '#c9a86c';
+        let mainTitleSize = 2.8;
+        let subTitleColor = '#6a6a6a';
+        let subTitleSize = 1.1;
+
         const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB (Firebase 제한)
         const MAX_THUMBNAIL_SIZE = 2 * 1024 * 1024; // 2MB
 
@@ -1459,9 +1696,9 @@
             }
         }
 
-        async function saveIntroData(intro) {
+        async function saveIntroData(introData) {
             try {
-                await database.ref('intro/data').set(intro);
+                await database.ref('intro/data').set(introData);
             } catch (error) {
                 console.error('saveIntroData error:', error);
                 throw error;
@@ -1707,25 +1944,23 @@
             document.getElementById('editThumbnailRemoveBtn').style.display = 'none';
         }
 
-        // 클립보드 붙여넣기 처리 (새 항목 추가)
-        function handleThumbnailPaste(event) {
-            const items = event.clipboardData?.items;
+        // 클립보드 붙여넣기 처리
+        function handleThumbnailPaste(e) {
+            const items = e.clipboardData?.items;
             if (!items) return;
             
             for (const item of items) {
                 if (item.type.startsWith('image/')) {
-                    event.preventDefault();
+                    e.preventDefault();
                     const file = item.getAsFile();
-                    
                     if (file.size > MAX_THUMBNAIL_SIZE) {
                         alert('썸네일은 2MB 이하여야 합니다.');
                         return;
                     }
-                    
                     const reader = new FileReader();
-                    reader.onload = (e) => {
-                        selectedThumbnail = e.target.result;
-                        document.getElementById('thumbnailPreviewImg').src = e.target.result;
+                    reader.onload = (ev) => {
+                        selectedThumbnail = ev.target.result;
+                        document.getElementById('thumbnailPreviewImg').src = ev.target.result;
                         document.getElementById('thumbnailPreviewImg').style.display = 'block';
                         document.getElementById('thumbnailPlaceholder').style.display = 'none';
                         document.getElementById('thumbnailRemoveBtn').style.display = 'flex';
@@ -1736,26 +1971,23 @@
             }
         }
 
-        // 클립보드 붙여넣기 처리 (수정 모달)
-        function handleEditThumbnailPaste(event) {
-            const items = event.clipboardData?.items;
+        function handleEditThumbnailPaste(e) {
+            const items = e.clipboardData?.items;
             if (!items) return;
             
             for (const item of items) {
                 if (item.type.startsWith('image/')) {
-                    event.preventDefault();
+                    e.preventDefault();
                     const file = item.getAsFile();
-                    
                     if (file.size > MAX_THUMBNAIL_SIZE) {
                         alert('썸네일은 2MB 이하여야 합니다.');
                         return;
                     }
-                    
                     const reader = new FileReader();
-                    reader.onload = (e) => {
-                        editThumbnail = e.target.result;
+                    reader.onload = (ev) => {
+                        editThumbnail = ev.target.result;
                         editThumbnailChanged = true;
-                        document.getElementById('editThumbnailPreviewImg').src = e.target.result;
+                        document.getElementById('editThumbnailPreviewImg').src = ev.target.result;
                         document.getElementById('editThumbnailPreviewImg').style.display = 'block';
                         document.getElementById('editThumbnailPlaceholder').style.display = 'none';
                         document.getElementById('editThumbnailRemoveBtn').style.display = 'flex';
@@ -1766,240 +1998,36 @@
             }
         }
 
-        // 태그 처리
-        function addTag(containerId, inputId, mode) {
-            const input = document.getElementById(inputId);
-            const tag = input.value.trim();
-            if (!tag) return;
-
-            const tags = mode === 'edit' ? editTags : currentTags;
-            if (!tags.includes(tag)) {
-                tags.push(tag);
-                renderTags(containerId, tags, mode);
-            }
-            input.value = '';
-        }
-
-        function removeTag(containerId, tag, mode) {
-            const tags = mode === 'edit' ? editTags : currentTags;
-            const idx = tags.indexOf(tag);
-            if (idx > -1) {
-                tags.splice(idx, 1);
-                renderTags(containerId, tags, mode);
-            }
-        }
-
-        function renderTags(containerId, tags, mode) {
-            const container = document.getElementById(containerId);
-            const inputId = mode === 'edit' ? 'editTagInput' : 'tagInput';
-            container.innerHTML = tags.map(t => 
-                `<span class="tag-item">${t}<button class="tag-remove" onclick="removeTag('${containerId}', '${t}', '${mode}')">×</button></span>`
-            ).join('') + `<input type="text" class="tag-input" id="${inputId}" placeholder="키워드 입력 후 Enter">`;
-            
-            document.getElementById(inputId).addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') { e.preventDefault(); addTag(containerId, inputId, mode); }
-            });
-        }
-
-        // ============ 항목 저장/수정/삭제 ============
-        async function saveItem() {
-            const title = document.getElementById('itemTitle').value.trim();
-            const category = document.getElementById('addCategory').value;
-            const errorEl = document.getElementById('addError');
-
-            if (!title) {
-                errorEl.textContent = '제목을 입력해주세요.';
-                errorEl.classList.add('show');
-                return;
-            }
-
-            if (!selectedFile && !document.getElementById('itemLink').value.trim()) {
-                errorEl.textContent = '파일 또는 링크를 입력해주세요.';
-                errorEl.classList.add('show');
-                return;
-            }
-
-            const saveBtn = document.getElementById('saveBtn');
-            saveBtn.disabled = true;
-            saveBtn.textContent = '저장 중...';
-
-            try {
-                const itemId = 'item_' + Date.now();
-                const link = document.getElementById('itemLink').value.trim();
-                
-                let hasFile = false;
-                let fileName = '';
-                let fileType = 'other';
-
-                if (selectedFile) {
-                    // 파일을 Base64로 변환
-                    const progressEl = document.getElementById('uploadProgress');
-                    progressEl.classList.add('show');
-                    
-                    const fileData = await new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onload = () => resolve(reader.result);
-                        reader.onerror = reject;
-                        reader.onprogress = (e) => {
-                            if (e.lengthComputable) {
-                                const percent = Math.round((e.loaded / e.total) * 100);
-                                document.getElementById('progressFill').style.width = percent + '%';
-                                document.getElementById('progressText').textContent = '업로드 중... ' + percent + '%';
-                            }
-                        };
-                        reader.readAsDataURL(selectedFile);
-                    });
-                    
-                    await saveFile(itemId, fileData);
-                    hasFile = true;
-                    fileName = selectedFile.name;
-                    fileType = getFileType(selectedFile.name);
-                    progressEl.classList.remove('show');
-                }
-
-                // 썸네일 저장
-                let hasThumbnail = false;
-                if (selectedThumbnail) {
-                    await saveFile(itemId + '_thumb', selectedThumbnail);
-                    hasThumbnail = true;
-                }
-
-                const item = {
-                    id: itemId,
-                    category,
-                    title,
-                    description: document.getElementById('itemDesc').value.trim(),
-                    date: document.getElementById('itemDate').value || new Date().toISOString().slice(0, 7),
-                    tags: currentTags,
-                    link,
-                    hasFile,
-                    hasThumbnail,
-                    fileName,
-                    fileType,
-                    order: Date.now()
-                };
-
-                await saveMetadata(item);
-                
-                closeModal('addModal');
-                await renderSectionsAndNav();
-                await renderAllSections();
-                
-            } catch (error) {
-                console.error('Save error:', error);
-                errorEl.textContent = '저장 중 오류가 발생했습니다: ' + error.message;
-                errorEl.classList.add('show');
-            }
-
-            saveBtn.disabled = false;
-            saveBtn.textContent = '저장';
-        }
-
-        async function updateItem() {
-            const itemId = document.getElementById('editItemId').value;
-            const category = document.getElementById('editCategory').value;
-            const title = document.getElementById('editTitle').value.trim();
-            const errorEl = document.getElementById('editError');
-
-            if (!title) {
-                errorEl.textContent = '제목을 입력해주세요.';
-                errorEl.classList.add('show');
-                return;
-            }
-
-            try {
-                const data = await getAllMetadata();
-                const item = data[category].find(i => i.id === itemId);
-                if (!item) return;
-
-                item.title = title;
-                item.description = document.getElementById('editDesc').value.trim();
-                item.date = document.getElementById('editDate').value;
-                item.tags = editTags;
-
-                // 썸네일 변경 처리
-                if (editThumbnailChanged) {
-                    if (editThumbnailRemoved) {
-                        await deleteFile(itemId + '_thumb');
-                        item.hasThumbnail = false;
-                    } else if (editThumbnail) {
-                        await saveFile(itemId + '_thumb', editThumbnail);
-                        item.hasThumbnail = true;
-                    }
-                }
-
-                // 파일 변경 처리
-                if (editNewFile) {
-                    const reader = new FileReader();
-                    const fileData = await new Promise((resolve, reject) => {
-                        reader.onload = () => resolve(reader.result);
-                        reader.onerror = reject;
-                        reader.readAsDataURL(editNewFile);
-                    });
-                    
-                    await saveFile(itemId, fileData);
-                    item.fileName = editNewFile.name;
-                    item.fileType = getFileType(editNewFile.name);
-                }
-
-                await saveMetadata(item);
-                
-                closeModal('editModal');
-                await renderSectionsAndNav();
-                await renderAllSections();
-                
-            } catch (error) {
-                console.error('Update error:', error);
-                errorEl.textContent = '수정 중 오류가 발생했습니다.';
-                errorEl.classList.add('show');
-            }
-        }
-
-        async function deleteItem() {
-            if (!confirm('이 항목을 삭제하시겠습니까?')) return;
-
-            const itemId = document.getElementById('editItemId').value;
-            const category = document.getElementById('editCategory').value;
-
-            try {
-                await deleteMetadata(itemId);
-                await deleteFile(itemId);
-                await deleteFile(itemId + '_thumb');
-                
-                closeModal('editModal');
-                await renderSectionsAndNav();
-                await renderAllSections();
-            } catch (error) {
-                console.error('Delete error:', error);
-                alert('삭제 중 오류가 발생했습니다.');
-            }
-        }
-
-        function resetAddForm() {
-            document.getElementById('itemTitle').value = '';
-            document.getElementById('itemDesc').value = '';
-            document.getElementById('itemDate').value = '';
-            document.getElementById('itemLink').value = '';
-            currentTags = [];
-            renderTags('tagsContainer', currentTags, 'current');
-            removeFile();
-            removeThumbnail();
-            document.getElementById('uploadProgress').classList.remove('show');
-        }
-
-        function resetEditForm() {
-            editTags = [];
-            editThumbnail = null;
-            editThumbnailChanged = false;
-            editThumbnailRemoved = false;
-            editNewFile = null;
-            document.getElementById('editFileInput').value = '';
-            document.getElementById('editNewFileInfo').style.display = 'none';
-            document.getElementById('editCurrentFile').style.display = 'none';
-        }
-
-        // ============ 프로필 관련 ============
+        // ============ 프로필 이미지 CTRL+V 처리 ============
         let profileImageData = null;
+
+        function handleProfileImagePaste(e) {
+            if (!isLoggedIn) return;
+            
+            const items = e.clipboardData?.items;
+            if (!items) return;
+            
+            for (const item of items) {
+                if (item.type.startsWith('image/')) {
+                    e.preventDefault();
+                    const file = item.getAsFile();
+                    if (file.size > MAX_THUMBNAIL_SIZE) {
+                        alert('이미지는 2MB 이하여야 합니다.');
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        profileImageData = ev.target.result;
+                        document.getElementById('profileImagePreview').src = ev.target.result;
+                        document.getElementById('profileImagePreview').style.display = 'block';
+                        document.getElementById('profileImagePlaceholder').style.display = 'none';
+                        document.getElementById('profileImageRemoveBtn').style.display = 'flex';
+                    };
+                    reader.readAsDataURL(file);
+                    break;
+                }
+            }
+        }
 
         function handleProfileImageSelect(event) {
             if (event.target.files.length) {
@@ -2032,10 +2060,71 @@
             document.getElementById('profileImageRemoveBtn').style.display = 'none';
         }
 
+        // ============ 타이틀 색상/크기 관련 함수 ============
+        function selectTitleColor(type, color) {
+            if (type === 'main') {
+                mainTitleColor = color;
+                document.getElementById('mainTitleColorPicker').value = color;
+                document.getElementById('mainTitleColorCode').value = color;
+                updateTitleColorPaletteSelection('main', color);
+            } else {
+                subTitleColor = color;
+                document.getElementById('subTitleColorPicker').value = color;
+                document.getElementById('subTitleColorCode').value = color;
+                updateTitleColorPaletteSelection('sub', color);
+            }
+        }
+
+        function updateTitleColorPaletteSelection(type, color) {
+            const paletteId = type === 'main' ? 'mainTitleColorPalette' : 'subTitleColorPalette';
+            const palette = document.getElementById(paletteId);
+            palette.querySelectorAll('.color-palette-item').forEach(item => {
+                item.classList.toggle('active', item.dataset.color === color);
+            });
+        }
+
+        function handleColorCodeInput(type, value) {
+            // 유효한 색상 코드인지 확인
+            const hexPattern = /^#[0-9A-Fa-f]{6}$/;
+            if (hexPattern.test(value)) {
+                selectTitleColor(type, value);
+            }
+        }
+
+        function updateTitleSizePreview(type, value) {
+            if (type === 'main') {
+                mainTitleSize = parseFloat(value);
+                document.getElementById('mainTitleSizeValue').textContent = value + 'rem';
+            } else {
+                subTitleSize = parseFloat(value);
+                document.getElementById('subTitleSizeValue').textContent = value + 'rem';
+            }
+        }
+
         async function openProfileModal() {
+            if (!isLoggedIn) return;
+            
             const profile = await getProfile();
             document.getElementById('profileTitle').value = profile?.title || 'PORTFOLIO';
             document.getElementById('profileSubtitle').value = profile?.subtitle || 'GAME DESIGNER';
+            
+            // 색상 로드
+            mainTitleColor = profile?.mainTitleColor || '#c9a86c';
+            subTitleColor = profile?.subTitleColor || '#6a6a6a';
+            mainTitleSize = profile?.mainTitleSize || 2.8;
+            subTitleSize = profile?.subTitleSize || 1.1;
+            
+            document.getElementById('mainTitleColorPicker').value = mainTitleColor;
+            document.getElementById('mainTitleColorCode').value = mainTitleColor;
+            document.getElementById('subTitleColorPicker').value = subTitleColor;
+            document.getElementById('subTitleColorCode').value = subTitleColor;
+            document.getElementById('mainTitleSize').value = mainTitleSize;
+            document.getElementById('mainTitleSizeValue').textContent = mainTitleSize + 'rem';
+            document.getElementById('subTitleSize').value = subTitleSize;
+            document.getElementById('subTitleSizeValue').textContent = subTitleSize + 'rem';
+            
+            updateTitleColorPaletteSelection('main', mainTitleColor);
+            updateTitleColorPaletteSelection('sub', subTitleColor);
             
             profileImageData = null;
             if (profile?.image) {
@@ -2057,7 +2146,11 @@
             const newProfile = {
                 title: document.getElementById('profileTitle').value || 'PORTFOLIO',
                 subtitle: document.getElementById('profileSubtitle').value || 'GAME DESIGNER',
-                image: profileImageData === 'removed' ? null : (profileImageData || currentProfile.image)
+                image: profileImageData === 'removed' ? null : (profileImageData || currentProfile.image),
+                mainTitleColor: mainTitleColor,
+                subTitleColor: subTitleColor,
+                mainTitleSize: mainTitleSize,
+                subTitleSize: subTitleSize
             };
             
             await saveProfileData(newProfile);
@@ -2068,9 +2161,17 @@
         async function loadProfile() {
             const profile = await getProfile();
             const profileImageEl = document.getElementById('profileImage');
+            const mainTitleEl = document.getElementById('mainTitle');
+            const subTitleEl = document.getElementById('subTitle');
             
-            document.getElementById('mainTitle').textContent = profile?.title || 'PORTFOLIO';
-            document.getElementById('subTitle').textContent = profile?.subtitle || 'GAME DESIGNER';
+            mainTitleEl.textContent = profile?.title || 'PORTFOLIO';
+            subTitleEl.textContent = profile?.subtitle || 'GAME DESIGNER';
+            
+            // 타이틀 스타일 적용
+            mainTitleEl.style.color = profile?.mainTitleColor || '#c9a86c';
+            mainTitleEl.style.fontSize = (profile?.mainTitleSize || 2.8) + 'rem';
+            subTitleEl.style.color = profile?.subTitleColor || '#6a6a6a';
+            subTitleEl.style.fontSize = (profile?.subTitleSize || 1.1) + 'rem';
             
             if (profile?.image) {
                 document.getElementById('profileEmoji').style.display = 'none';
@@ -2085,24 +2186,62 @@
             }
         }
 
-        // 자기소개 관련
+        // ============ 자기소개 정렬 관련 함수 ============
+        function setIntroAlign(align) {
+            currentIntroAlign = align;
+            
+            // 버튼 활성화 상태 업데이트
+            document.getElementById('alignLeft').classList.toggle('active', align === 'left');
+            document.getElementById('alignCenter').classList.toggle('active', align === 'center');
+            document.getElementById('alignRight').classList.toggle('active', align === 'right');
+            
+            // 텍스트 입력창 정렬 미리보기
+            document.getElementById('introTextInput').style.textAlign = align;
+        }
+
         async function openIntroModal() {
-            const intro = await getIntro();
-            document.getElementById('introTextInput').value = intro || document.getElementById('introContent').textContent.trim();
+            if (!isLoggedIn) return;
+            
+            const introData = await getIntro();
+            
+            if (typeof introData === 'object' && introData !== null) {
+                document.getElementById('introTextInput').value = introData.text || '';
+                currentIntroAlign = introData.align || 'left';
+            } else {
+                document.getElementById('introTextInput').value = introData || document.getElementById('introContent').textContent.trim();
+                currentIntroAlign = 'left';
+            }
+            
+            setIntroAlign(currentIntroAlign);
             openModal('introModal');
         }
 
         async function saveIntro() {
-            const intro = document.getElementById('introTextInput').value.trim();
-            await saveIntroData(intro);
-            document.getElementById('introContent').textContent = intro;
+            const introText = document.getElementById('introTextInput').value.trim();
+            const introData = {
+                text: introText,
+                align: currentIntroAlign
+            };
+            await saveIntroData(introData);
+            
+            const introContent = document.getElementById('introContent');
+            introContent.textContent = introText;
+            document.getElementById('introText').style.textAlign = currentIntroAlign;
+            
             closeModal('introModal');
         }
 
         async function loadIntro() {
-            const intro = await getIntro();
-            if (intro) {
-                document.getElementById('introContent').textContent = intro;
+            const introData = await getIntro();
+            const introContent = document.getElementById('introContent');
+            const introText = document.getElementById('introText');
+            
+            if (typeof introData === 'object' && introData !== null) {
+                introContent.textContent = introData.text || '';
+                introText.style.textAlign = introData.align || 'left';
+            } else if (introData) {
+                introContent.textContent = introData;
+                introText.style.textAlign = 'left';
             }
         }
 
@@ -2169,6 +2308,8 @@
         }
 
         function openFooterModal() {
+            if (!isLoggedIn) return;
+            
             getFooter().then(footer => {
                 if (footer) {
                     document.getElementById('footerContactTitle').value = footer.contactTitle || 'CONTACT';
@@ -2205,6 +2346,8 @@
         let editingSectionId = null;
 
         function openSectionModal(sectionId = null) {
+            if (!isLoggedIn) return;
+            
             editingSectionId = sectionId;
             
             if (sectionId) {
@@ -2499,195 +2642,83 @@
                     </div>
                 </section>
             `).join('');
-            
-            // 그리드 드롭존 설정 (빈 섹션에 드롭 가능하도록)
-            setupGridDropZones();
-            
-            // 섹션 드래그 설정
+
+            // 섹션 드래그앤드롭 설정
             setupSectionDragAndDrop();
-            
-            // UI 업데이트 (로그인 상태에 따른 버튼 표시)
-            updateUI();
         }
-        
-        // 섹션 드래그앤드롭 설정
-        let draggedSection = null;
-        
+
         function setupSectionDragAndDrop() {
             document.querySelectorAll('.section').forEach(section => {
                 const handle = section.querySelector('.section-drag-handle');
                 if (!handle) return;
-                
-                const sectionId = section.dataset.sectionId;
-                
+
                 handle.addEventListener('mousedown', () => {
                     if (isLoggedIn) {
                         section.draggable = true;
                     }
                 });
-                
+
                 section.addEventListener('dragstart', (e) => {
                     if (!isLoggedIn) {
                         e.preventDefault();
                         return;
                     }
-                    // 카드 드래그와 구분
-                    if (e.target.classList.contains('portfolio-card')) return;
-                    
-                    draggedSection = { element: section, sectionId };
-                    section.classList.add('dragging');
-                    e.dataTransfer.effectAllowed = 'move';
+                    // 섹션 드래그 확인
+                    if (e.target.classList.contains('section')) {
+                        section.classList.add('dragging');
+                        e.dataTransfer.effectAllowed = 'move';
+                    }
                 });
-                
+
                 section.addEventListener('dragend', () => {
                     section.draggable = false;
                     section.classList.remove('dragging');
-                    draggedSection = null;
                     document.querySelectorAll('.drag-over-section').forEach(el => el.classList.remove('drag-over-section'));
                 });
-                
+
                 section.addEventListener('dragover', (e) => {
                     e.preventDefault();
-                    if (!draggedSection || !isLoggedIn) return;
-                    if (draggedSection.element === section) return;
-                    
-                    // 카드 드래그 중이면 무시
-                    if (draggedItem) return;
-                    
-                    section.classList.add('drag-over-section');
+                    if (!isLoggedIn) return;
+                    const draggingSection = document.querySelector('.section.dragging');
+                    if (draggingSection && draggingSection !== section) {
+                        section.classList.add('drag-over-section');
+                    }
                 });
-                
-                section.addEventListener('dragleave', (e) => {
-                    if (section.contains(e.relatedTarget)) return;
+
+                section.addEventListener('dragleave', () => {
                     section.classList.remove('drag-over-section');
                 });
-                
+
                 section.addEventListener('drop', async (e) => {
-                    // 카드 드롭인 경우 무시 (그리드에서 처리)
-                    if (draggedItem) return;
-                    
                     e.preventDefault();
                     section.classList.remove('drag-over-section');
                     
-                    if (!draggedSection || !isLoggedIn) return;
-                    if (draggedSection.element === section) return;
+                    if (!isLoggedIn) return;
+                    const draggingSection = document.querySelector('.section.dragging');
+                    if (!draggingSection || draggingSection === section) return;
                     
-                    const container = section.parentElement;
+                    const container = document.getElementById('sectionsContainer');
                     const sections = Array.from(container.querySelectorAll('.section'));
-                    const draggedIndex = sections.indexOf(draggedSection.element);
+                    const draggedIndex = sections.indexOf(draggingSection);
                     const dropIndex = sections.indexOf(section);
                     
                     if (draggedIndex < dropIndex) {
-                        section.after(draggedSection.element);
+                        section.after(draggingSection);
                     } else {
-                        section.before(draggedSection.element);
+                        section.before(draggingSection);
                     }
                     
-                    await saveSectionOrder();
-                });
-            });
-        }
-        
-        // 섹션 순서 저장
-        async function saveSectionOrder() {
-            const container = document.getElementById('sectionsContainer');
-            const sectionElements = Array.from(container.querySelectorAll('.section'));
-            const sections = await getSections();
-            
-            for (let i = 0; i < sectionElements.length; i++) {
-                const sectionId = sectionElements[i].dataset.sectionId;
-                const section = sections.find(s => s.id === sectionId);
-                if (section) {
-                    section.order = i;
-                    await saveSectionData(section);
-                }
-            }
-            
-            // 네비게이션도 업데이트
-            await updateNavOrder();
-        }
-        
-        // 네비게이션 순서 업데이트
-        async function updateNavOrder() {
-            const sections = await getSections();
-            const data = await getAllMetadata();
-            const navContainer = document.getElementById('navTabs');
-            const totalCount = sections.reduce((sum, s) => sum + (data[s.id] || []).length, 0);
-            
-            navContainer.innerHTML = `
-                <a href="#" class="nav-tab ${currentFilter === 'all' ? 'active' : ''}" data-filter="all">
-                    📋 전체 <span class="nav-count">${totalCount}</span>
-                </a>
-                ${sections.map(section => `
-                    <a href="#${section.id}" class="nav-tab ${currentFilter === section.id ? 'active' : ''}" data-filter="${section.id}">
-                        ${section.icon} ${section.title.split(' ')[0]} 
-                        <span class="nav-count" id="navCount-${section.id}">${(data[section.id] || []).length}</span>
-                    </a>
-                `).join('')}
-            `;
-            
-            // 네비게이션 이벤트 재설정
-            navContainer.querySelectorAll('.nav-tab').forEach(tab => {
-                tab.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const filter = this.dataset.filter;
-                    setFilter(filter);
-                    if (filter !== 'all') {
-                        document.getElementById(filter)?.scrollIntoView({ behavior: 'smooth' });
+                    // 새 순서 저장
+                    const newSections = Array.from(container.querySelectorAll('.section'));
+                    for (let i = 0; i < newSections.length; i++) {
+                        const sectionId = newSections[i].dataset.sectionId;
+                        const sectionData = await database.ref('sections/' + sectionId).once('value');
+                        const data = sectionData.val();
+                        if (data) {
+                            data.order = i;
+                            await database.ref('sections/' + sectionId).set(data);
+                        }
                     }
-                });
-            });
-        }
-        
-        // 그리드 드롭존 설정
-        function setupGridDropZones() {
-            document.querySelectorAll('.portfolio-grid').forEach(grid => {
-                const category = grid.dataset.category;
-                
-                grid.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    if (!draggedItem || !isLoggedIn) return;
-                    grid.classList.add('drag-over-grid');
-                });
-                
-                grid.addEventListener('dragleave', (e) => {
-                    // 자식 요소로 이동할 때는 무시
-                    if (grid.contains(e.relatedTarget)) return;
-                    grid.classList.remove('drag-over-grid');
-                });
-                
-                grid.addEventListener('drop', async (e) => {
-                    e.preventDefault();
-                    grid.classList.remove('drag-over-grid');
-                    
-                    if (!draggedItem || !isLoggedIn) return;
-                    
-                    // 카드 위에 드롭된 경우는 카드의 drop 이벤트에서 처리
-                    if (e.target.closest('.portfolio-card')) return;
-                    
-                    const sourceCategory = draggedItem.category;
-                    const targetCategory = category;
-                    const addCard = grid.querySelector('.add-card');
-                    
-                    // 카드를 add-card 앞에 추가
-                    if (addCard) {
-                        addCard.before(draggedItem.element);
-                    } else {
-                        grid.appendChild(draggedItem.element);
-                    }
-                    
-                    // 다른 섹션으로 이동한 경우
-                    if (sourceCategory !== targetCategory) {
-                        draggedItem.element.dataset.category = targetCategory;
-                        await moveItemToSection(draggedItem.itemId, sourceCategory, targetCategory);
-                    }
-                    
-                    // 순서 저장
-                    if (sourceCategory !== targetCategory) {
-                        await saveNewOrder(sourceCategory);
-                    }
-                    await saveNewOrder(targetCategory);
-                    await updateSectionCounts();
                 });
             });
         }
@@ -2695,121 +2726,100 @@
         async function renderAllSections() {
             const sections = await getSections();
             const data = await getAllMetadata();
-            
-            sections.forEach(section => {
-                renderSection(section.id, data[section.id] || []);
-            });
-            
-            updateSectionVisibility();
+
+            for (const section of sections) {
+                const items = data[section.id] || [];
+                items.sort((a, b) => (a.order || 0) - (b.order || 0));
+                await renderGrid(section.id, items);
+            }
+
+            updateUI();
         }
 
-        function renderSection(category, items) {
+        async function renderGrid(category, items) {
             const grid = document.getElementById(`grid-${category}`);
             if (!grid) return;
             
-            const addCard = grid.querySelector('.add-card');
+            // 기존 카드 제거 (추가 카드 제외)
             grid.querySelectorAll('.portfolio-card').forEach(card => card.remove());
-
-            items.sort((a, b) => (a.order || 0) - (b.order || 0));
-
-            items.forEach(item => {
-                const card = createCard(item, category);
-                grid.insertBefore(card, addCard);
-            });
-
-            const countEl = document.getElementById(`sectionCount-${category}`);
-            if (countEl) countEl.textContent = `(${items.length})`;
             
-            const navCountEl = document.getElementById(`navCount-${category}`);
-            if (navCountEl) navCountEl.textContent = items.length;
-        }
+            for (const item of items) {
+                const card = document.createElement('div');
+                card.className = 'portfolio-card';
+                card.dataset.itemId = item.id;
+                card.dataset.category = category;
+                
+                let thumbnailHtml;
+                if (item.hasThumbnail) {
+                    const thumbData = await getFile(item.id + '_thumb');
+                    thumbnailHtml = thumbData ? `<img src="${thumbData}" alt="">` : getFileIcon(item.fileName || '');
+                } else {
+                    thumbnailHtml = getFileIcon(item.fileName || '');
+                }
 
-        function createCard(item, category) {
-            const card = document.createElement('div');
-            card.className = 'portfolio-card';
-            card.dataset.itemId = item.id;
-            card.dataset.category = category;
-            card.dataset.hasThumbnail = item.hasThumbnail ? 'true' : 'false';
-            
-            card.innerHTML = `
-                <div class="drag-handle ${isLoggedIn ? 'show' : ''}" title="드래그하여 순서 변경">⋮⋮</div>
-                <button class="card-edit-btn ${isLoggedIn ? 'show' : ''}" onclick="event.stopPropagation(); openEditModal('${category}', '${item.id}')">⚙️</button>
-                <div class="card-link" onclick="openItem('${item.id}', '${item.link || ''}', ${item.hasFile})">
-                    <div class="card-thumbnail ${item.fileType}" id="thumb-${item.id}">
-                        <span class="thumb-icon">${getFileIcon(item.fileName || 'file.other')}</span>
-                        <span class="card-badge ${item.fileType}">${item.fileType.toUpperCase()}</span>
-                    </div>
-                    <div class="card-content">
-                        <h3 class="card-title">${item.title}</h3>
-                        <p class="card-description">${item.description || '설명 없음'}</p>
-                        <div class="card-meta">
-                            <span class="card-date">${item.date}</span>
-                            <div class="card-tags">
-                                ${(item.tags || []).slice(0, 3).map(t => `<span class="card-tag">${t}</span>`).join('')}
+                card.innerHTML = `
+                    <div class="drag-handle" title="드래그하여 순서 변경">☰</div>
+                    <button class="card-edit-btn" onclick="event.stopPropagation(); openEditModal('${category}', '${item.id}')">✏️</button>
+                    <div class="card-link" onclick="openFile('${item.id}', '${item.link || ''}')">
+                        <div class="card-thumbnail ${item.fileType || 'other'}">
+                            ${thumbnailHtml}
+                            <span class="card-badge ${item.fileType || 'other'}">${(item.fileType || 'other').toUpperCase()}</span>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">${item.title}</h3>
+                            <p class="card-description">${item.description || '설명 없음'}</p>
+                            <div class="card-meta">
+                                <span class="card-date">${item.date || ''}</span>
+                                <div class="card-tags">
+                                    ${(item.tags || []).slice(0, 2).map(tag => `<span class="card-tag">${tag}</span>`).join('')}
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            `;
-
-            if (item.hasThumbnail) {
-                loadCardThumbnail(item.id);
-            }
-            
-            setupDragAndDrop(card, category, item.id);
-            return card;
-        }
-
-        async function loadCardThumbnail(itemId) {
-            const thumbnailData = await getFile(itemId + '_thumb');
-            if (thumbnailData) {
-                const thumbContainer = document.getElementById(`thumb-${itemId}`);
-                if (thumbContainer) {
-                    const icon = thumbContainer.querySelector('.thumb-icon');
-                    if (icon) icon.style.display = 'none';
-                    
-                    const img = document.createElement('img');
-                    img.src = thumbnailData;
-                    img.style.cssText = 'width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;';
-                    thumbContainer.style.position = 'relative';
-                    thumbContainer.insertBefore(img, thumbContainer.firstChild);
-                }
+                `;
+                
+                grid.appendChild(card);
+                setupDragAndDrop(card, category, item.id);
             }
         }
 
-        async function openItem(id, link, hasFile) {
+        async function openFile(itemId, link) {
             if (link) {
                 window.open(link, '_blank');
-            } else if (hasFile) {
-                const fileData = await getFile(id);
-                if (fileData) {
-                    const blob = dataURItoBlob(fileData);
-                    const blobURL = URL.createObjectURL(blob);
-                    window.open(blobURL, '_blank');
-                    setTimeout(() => URL.revokeObjectURL(blobURL), 60000);
+                return;
+            }
+            
+            const fileData = await getFile(itemId);
+            if (fileData) {
+                const newTab = window.open();
+                if (fileData.startsWith('data:text/html') || fileData.startsWith('data:application/pdf') || fileData.startsWith('data:image')) {
+                    newTab.document.write(`<iframe src="${fileData}" style="width:100%;height:100%;border:none;"></iframe>`);
+                } else {
+                    const link = document.createElement('a');
+                    link.href = fileData;
+                    link.download = 'file';
+                    link.click();
                 }
             }
         }
 
-        function dataURItoBlob(dataURI) {
-            const byteString = atob(dataURI.split(',')[1]);
-            const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
-            const ab = new ArrayBuffer(byteString.length);
-            const ia = new Uint8Array(ab);
-            for (let i = 0; i < byteString.length; i++) {
-                ia[i] = byteString.charCodeAt(i);
-            }
-            return new Blob([ab], { type: mimeString });
+        // ============ 모달 관련 ============
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
         }
 
-        // ============ UI 로직 ============
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            document.querySelectorAll('.form-error').forEach(el => el.classList.remove('show'));
+        }
+
+        // ============ 인증 관련 ============
         function checkSession() {
-            // Firebase Auth 상태 변경 리스너
-            firebase.auth().onAuthStateChanged((user) => {
-                isLoggedIn = !!user;
-                updateLoginUI();
-                updateUI();
-            });
+            const session = sessionStorage.getItem('portfolioAuth');
+            if (session) {
+                isLoggedIn = true;
+                updateAuthUI();
+            }
         }
 
         async function login() {
@@ -2824,60 +2834,95 @@
             }
 
             try {
-                await firebase.auth().signInWithEmailAndPassword(email, password);
-                closeModal('loginModal');
-                document.getElementById('loginEmail').value = '';
-                document.getElementById('loginPassword').value = '';
-            } catch (error) {
-                let message = '로그인에 실패했습니다.';
-                if (error.code === 'auth/user-not-found') {
-                    message = '등록되지 않은 이메일입니다.';
-                } else if (error.code === 'auth/wrong-password') {
-                    message = '비밀번호가 올바르지 않습니다.';
-                } else if (error.code === 'auth/invalid-email') {
-                    message = '올바른 이메일 형식이 아닙니다.';
+                const auth = await getAuth();
+                if (auth && auth.password === password) {
+                    isLoggedIn = true;
+                    sessionStorage.setItem('portfolioAuth', 'true');
+                    updateAuthUI();
+                    closeModal('loginModal');
+                    await renderSectionsAndNav();
+                    await renderAllSections();
+                } else {
+                    errorEl.textContent = '비밀번호가 일치하지 않습니다.';
+                    errorEl.classList.add('show');
                 }
-                errorEl.textContent = message;
+            } catch (error) {
+                errorEl.textContent = '로그인 중 오류가 발생했습니다.';
                 errorEl.classList.add('show');
             }
         }
 
         function logout() {
-            firebase.auth().signOut();
+            isLoggedIn = false;
+            sessionStorage.removeItem('portfolioAuth');
+            updateAuthUI();
+            renderSectionsAndNav();
+            renderAllSections();
         }
 
-        function updateLoginUI() {
+        function updateAuthUI() {
             document.getElementById('loginBtn').style.display = isLoggedIn ? 'none' : 'block';
             document.getElementById('logoutBtn').style.display = isLoggedIn ? 'block' : 'none';
             document.getElementById('settingsBtn').style.display = isLoggedIn ? 'block' : 'none';
             document.getElementById('loggedInStatus').style.display = isLoggedIn ? 'flex' : 'none';
+            document.getElementById('storageInfo').classList.toggle('show', isLoggedIn);
         }
 
-        function openModal(id) {
-            document.getElementById(id).classList.add('active');
-            document.querySelectorAll('.form-error').forEach(el => el.classList.remove('show'));
-        }
+        // ============ 태그 관련 ============
+        function addTag(containerId, inputId, type) {
+            const input = document.getElementById(inputId);
+            const tag = input.value.trim();
+            if (!tag) return;
 
-        function closeModal(id) {
-            document.getElementById(id).classList.remove('active');
-            if (id === 'addModal') resetAddForm();
-            if (id === 'editModal') resetEditForm();
-        }
-
-        function openAddModal(category) {
-            if (!isLoggedIn) {
-                alert('로그인이 필요합니다.');
-                openModal('loginModal');
-                return;
+            if (type === 'current') {
+                if (!currentTags.includes(tag)) {
+                    currentTags.push(tag);
+                    renderTags(containerId, currentTags, type);
+                }
+            } else {
+                if (!editTags.includes(tag)) {
+                    editTags.push(tag);
+                    renderTags(containerId, editTags, type);
+                }
             }
-            const titles = {
-                documents: '📄 새 기획서 추가',
-                tools: '🛠️ 새 도구 추가',
-                visuals: '🎨 새 비주얼 추가',
-                projects: '📁 새 프로젝트 추가'
-            };
-            document.getElementById('addModalTitle').textContent = titles[category] || '새 항목 추가';
+            input.value = '';
+        }
+
+        function removeTag(containerId, tag, type) {
+            if (type === 'current') {
+                currentTags = currentTags.filter(t => t !== tag);
+                renderTags(containerId, currentTags, type);
+            } else {
+                editTags = editTags.filter(t => t !== tag);
+                renderTags(containerId, editTags, type);
+            }
+        }
+
+        function renderTags(containerId, tags, type) {
+            const container = document.getElementById(containerId);
+            const input = container.querySelector('.tag-input');
+            container.innerHTML = '';
+            tags.forEach(tag => {
+                const tagEl = document.createElement('span');
+                tagEl.className = 'tag-item';
+                tagEl.innerHTML = `${tag} <button class="tag-remove" onclick="removeTag('${containerId}', '${tag}', '${type}')">×</button>`;
+                container.appendChild(tagEl);
+            });
+            container.appendChild(input);
+        }
+
+        // ============ 항목 관련 ============
+        function openAddModal(category) {
+            if (!isLoggedIn) return;
+            
+            resetAddForm();
             document.getElementById('addCategory').value = category;
+            
+            getSections().then(sections => {
+                const section = sections.find(s => s.id === category);
+                document.getElementById('addModalTitle').textContent = section ? `📄 ${section.title}에 추가` : '📄 새 항목 추가';
+            });
+            
             currentTags = [];
             renderTags('tagsContainer', currentTags, 'current');
             openModal('addModal');
@@ -2932,6 +2977,197 @@
             newFileInfoEl.style.display = 'none';
 
             openModal('editModal');
+        }
+
+        async function saveItem() {
+            const category = document.getElementById('addCategory').value;
+            const title = document.getElementById('itemTitle').value.trim();
+            const link = document.getElementById('itemLink').value.trim();
+            const errorEl = document.getElementById('addError');
+
+            if (!title) {
+                errorEl.textContent = '제목을 입력해주세요.';
+                errorEl.classList.add('show');
+                return;
+            }
+
+            if (!selectedFile && !link) {
+                errorEl.textContent = '파일을 업로드하거나 링크를 입력해주세요.';
+                errorEl.classList.add('show');
+                return;
+            }
+
+            try {
+                const saveBtn = document.getElementById('saveBtn');
+                saveBtn.disabled = true;
+                saveBtn.textContent = '저장 중...';
+
+                const itemId = 'item_' + Date.now();
+                const item = {
+                    id: itemId,
+                    category,
+                    title,
+                    description: document.getElementById('itemDesc').value.trim(),
+                    date: document.getElementById('itemDate').value,
+                    tags: currentTags,
+                    link: link || null,
+                    fileName: selectedFile?.name || null,
+                    fileType: selectedFile ? getFileType(selectedFile.name) : (link ? 'html' : 'other'),
+                    hasThumbnail: !!selectedThumbnail,
+                    order: Date.now()
+                };
+
+                // 파일 저장
+                if (selectedFile) {
+                    const progressEl = document.getElementById('uploadProgress');
+                    const progressFill = document.getElementById('progressFill');
+                    const progressText = document.getElementById('progressText');
+                    progressEl.classList.add('show');
+
+                    const reader = new FileReader();
+                    reader.onprogress = (e) => {
+                        if (e.lengthComputable) {
+                            const percent = Math.round((e.loaded / e.total) * 100);
+                            progressFill.style.width = percent + '%';
+                            progressText.textContent = `업로드 중... ${percent}%`;
+                        }
+                    };
+                    reader.onload = async (e) => {
+                        await saveFile(itemId, e.target.result);
+                        progressFill.style.width = '100%';
+                        progressText.textContent = '완료!';
+                    };
+                    reader.readAsDataURL(selectedFile);
+                    
+                    // 파일 읽기 완료 대기
+                    await new Promise(resolve => reader.onloadend = resolve);
+                }
+
+                // 썸네일 저장
+                if (selectedThumbnail) {
+                    await saveFile(itemId + '_thumb', selectedThumbnail);
+                }
+
+                // 메타데이터 저장
+                await saveMetadata(item);
+
+                saveBtn.disabled = false;
+                saveBtn.textContent = '저장';
+                
+                closeModal('addModal');
+                await renderSectionsAndNav();
+                await renderAllSections();
+                
+            } catch (error) {
+                console.error('Save error:', error);
+                errorEl.textContent = '저장 중 오류가 발생했습니다.';
+                errorEl.classList.add('show');
+                document.getElementById('saveBtn').disabled = false;
+                document.getElementById('saveBtn').textContent = '저장';
+            }
+        }
+
+        async function updateItem() {
+            const itemId = document.getElementById('editItemId').value;
+            const category = document.getElementById('editCategory').value;
+            const title = document.getElementById('editTitle').value.trim();
+            const errorEl = document.getElementById('editError');
+
+            if (!title) {
+                errorEl.textContent = '제목을 입력해주세요.';
+                errorEl.classList.add('show');
+                return;
+            }
+
+            try {
+                const data = await getAllMetadata();
+                const item = data[category].find(i => i.id === itemId);
+                if (!item) return;
+
+                item.title = title;
+                item.description = document.getElementById('editDesc').value.trim();
+                item.date = document.getElementById('editDate').value;
+                item.tags = editTags;
+
+                // 썸네일 변경 처리
+                if (editThumbnailChanged) {
+                    if (editThumbnailRemoved) {
+                        await deleteFile(itemId + '_thumb');
+                        item.hasThumbnail = false;
+                    } else if (editThumbnail) {
+                        await saveFile(itemId + '_thumb', editThumbnail);
+                        item.hasThumbnail = true;
+                    }
+                }
+
+                // 파일 변경 처리
+                if (editNewFile) {
+                    const reader = new FileReader();
+                    const fileData = await new Promise((resolve, reject) => {
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(editNewFile);
+                    });
+                    
+                    await saveFile(itemId, fileData);
+                    item.fileName = editNewFile.name;
+                    item.fileType = getFileType(editNewFile.name);
+                }
+
+                await saveMetadata(item);
+                
+                closeModal('editModal');
+                await renderSectionsAndNav();
+                await renderAllSections();
+                
+            } catch (error) {
+                console.error('Update error:', error);
+                errorEl.textContent = '수정 중 오류가 발생했습니다.';
+                errorEl.classList.add('show');
+            }
+        }
+
+        async function deleteItem() {
+            if (!confirm('이 항목을 삭제하시겠습니까?')) return;
+
+            const itemId = document.getElementById('editItemId').value;
+            const category = document.getElementById('editCategory').value;
+
+            try {
+                await deleteMetadata(itemId);
+                await deleteFile(itemId);
+                await deleteFile(itemId + '_thumb');
+                
+                closeModal('editModal');
+                await renderSectionsAndNav();
+                await renderAllSections();
+            } catch (error) {
+                console.error('Delete error:', error);
+                alert('삭제 중 오류가 발생했습니다.');
+            }
+        }
+
+        function resetAddForm() {
+            document.getElementById('itemTitle').value = '';
+            document.getElementById('itemDesc').value = '';
+            document.getElementById('itemDate').value = '';
+            document.getElementById('itemLink').value = '';
+            currentTags = [];
+            renderTags('tagsContainer', currentTags, 'current');
+            removeFile();
+            removeThumbnail();
+            document.getElementById('uploadProgress').classList.remove('show');
+        }
+
+        function resetEditForm() {
+            editTags = [];
+            editThumbnail = null;
+            editThumbnailChanged = false;
+            editThumbnailRemoved = false;
+            editNewFile = null;
+            document.getElementById('editFileInput').value = '';
+            document.getElementById('editNewFileInfo').style.display = 'none';
+            document.getElementById('editCurrentFile').style.display = 'none';
         }
 
         // 수정 모달 파일 선택 처리
@@ -3043,15 +3279,27 @@
                 }
             });
 
+            // 프로필 이미지 CTRL+V 이벤트
+            const profileImageUpload = document.getElementById('profileImageUpload');
+            profileImageUpload.addEventListener('paste', handleProfileImagePaste);
+            profileImageUpload.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.key === 'v') {
+                    // paste 이벤트가 자동으로 발생함
+                }
+            });
+
             // 모달이 열려있을 때 전체 문서에서 붙여넣기 감지
             document.addEventListener('paste', (e) => {
                 const addModal = document.getElementById('addModal');
                 const editModal = document.getElementById('editModal');
+                const profileModal = document.getElementById('profileModal');
                 
                 if (addModal.classList.contains('active')) {
                     handleThumbnailPaste(e);
                 } else if (editModal.classList.contains('active')) {
                     handleEditThumbnailPaste(e);
+                } else if (profileModal.classList.contains('active')) {
+                    handleProfileImagePaste(e);
                 }
             });
 
