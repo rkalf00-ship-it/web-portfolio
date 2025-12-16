@@ -1252,7 +1252,7 @@
             </div>
             <div class="contact-title" id="contactTitle">CONTACT</div>
             <div class="contact-links" id="contactLinks">
-                <a href="mailto:example@email.com" class="contact-link" id="contactEmail">✉️ Email : example@email.com</a>
+                <a href="/cdn-cgi/l/email-protection#82e7fae3eff2eee7c2e7efe3ebeeace1edef" class="contact-link" id="contactEmail">✉️ Email : <span class="__cf_email__" data-cfemail="9cf9e4fdf1ecf0f9dcf9f1fdf5f0b2fff3f1">[email&#160;protected]</span></a>
                 <a href="#" class="contact-link" id="contactGithub" style="display: none;">💻 GitHub</a>
                 <a href="#" class="contact-link" id="contactLinkedin" style="display: none;">💼 LinkedIn</a>
             </div>
@@ -1626,7 +1626,7 @@
 
 
     <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     
@@ -2864,15 +2864,53 @@
             
             const fileData = await getFile(itemId);
             if (fileData) {
-                const newTab = window.open();
-                if (fileData.startsWith('data:text/html') || fileData.startsWith('data:application/pdf') || fileData.startsWith('data:image')) {
-                    newTab.document.write(`<iframe src="${fileData}" style="width:100%;height:100%;border:none;"></iframe>`);
-                } else {
-                    const link = document.createElement('a');
-                    link.href = fileData;
-                    link.download = 'file';
-                    link.click();
+                // PDF 파일인 경우 Blob URL로 변환하여 열기
+                if (fileData.startsWith('data:application/pdf')) {
+                    try {
+                        // Base64 Data URL을 Blob으로 변환
+                        const response = await fetch(fileData);
+                        const blob = await response.blob();
+                        const blobUrl = URL.createObjectURL(blob);
+                        window.open(blobUrl, '_blank');
+                    } catch (error) {
+                        console.error('PDF 열기 오류:', error);
+                        // 실패 시 다운로드로 대체
+                        const downloadLink = document.createElement('a');
+                        downloadLink.href = fileData;
+                        downloadLink.download = 'document.pdf';
+                        downloadLink.click();
+                    }
+                    return;
                 }
+                
+                // HTML 파일인 경우
+                if (fileData.startsWith('data:text/html')) {
+                    const newTab = window.open();
+                    if (newTab) {
+                        newTab.document.write(`<!DOCTYPE html><html><head><style>*{margin:0;padding:0;}iframe{width:100%;height:100vh;border:none;}</style></head><body><iframe src="${fileData}"></iframe></body></html>`);
+                        newTab.document.close();
+                    }
+                    return;
+                }
+                
+                // 이미지 파일인 경우 Blob URL로 열기
+                if (fileData.startsWith('data:image')) {
+                    try {
+                        const response = await fetch(fileData);
+                        const blob = await response.blob();
+                        const blobUrl = URL.createObjectURL(blob);
+                        window.open(blobUrl, '_blank');
+                    } catch (error) {
+                        window.open(fileData, '_blank');
+                    }
+                    return;
+                }
+                
+                // 기타 파일은 다운로드
+                const downloadLink = document.createElement('a');
+                downloadLink.href = fileData;
+                downloadLink.download = 'file';
+                downloadLink.click();
             }
         }
 
@@ -3402,13 +3440,4 @@
                 setupEventListeners();
                 updateUI();
                 
-                console.log('Portfolio loaded successfully with Firebase!');
-            } catch (error) {
-                console.error('Init error:', error);
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', init);
-    </script>
-</body>
-</html>
+                console.log('Portfoli
