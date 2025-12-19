@@ -317,6 +317,78 @@
             display: block;
         }
 
+        .contact-add-btn {
+            width: 100%;
+            margin-top: 10px;
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            background: rgba(255,255,255,0.5);
+            border: 1px dashed var(--border-mid);
+            border-radius: 8px;
+            color: var(--text-mid);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .contact-add-btn:hover {
+            background: rgba(255,255,255,0.8);
+            border-color: var(--pastel-gold);
+            color: var(--text-dark);
+        }
+
+        .contact-delete-btn {
+            position: absolute;
+            right: 28px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: none;
+            font-size: 0.8rem;
+            opacity: 0.5;
+            cursor: pointer;
+        }
+
+        .contact-editable:hover .contact-delete-btn {
+            display: block;
+        }
+
+        .contact-delete-btn:hover {
+            opacity: 1;
+            color: var(--pastel-red-dark);
+        }
+
+        .icon-picker {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 10px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            margin-top: 8px;
+        }
+
+        .icon-option {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .icon-option:hover {
+            background: var(--pastel-gold-light);
+        }
+
+        .icon-option.selected {
+            border-color: var(--pastel-gold);
+            background: var(--pastel-gold-light);
+        }
+
         .intro-text-box {
             background: rgba(255,255,255,0.7);
             border-radius: 12px;
@@ -1121,6 +1193,12 @@
             background: var(--pastel-gold-light);
         }
 
+        .thumbnail-upload-area.dragover {
+            border-color: var(--pastel-blue);
+            background: var(--pastel-blue-light);
+            border-style: solid;
+        }
+
         .thumbnail-placeholder {
             display: flex;
             flex-direction: column;
@@ -1443,6 +1521,8 @@
     <div class="main-layout">
         <!-- 좌측 프로필 패널 -->
         <aside class="profile-panel">
+            <button class="profile-edit-btn" id="profileEditBtn" onclick="openProfileModal()" style="margin-bottom: 15px;">✏️ 프로필 수정</button>
+
             <div class="profile-image-container" id="profileImage">
                 <div class="profile-emoji" id="profileEmoji">🎮</div>
                 <img id="profileImg" style="display: none;">
@@ -1463,47 +1543,11 @@
 
             <div class="profile-section">
                 <div class="profile-section-title">📧 Contact</div>
-                <div class="profile-item contact-editable" onclick="if(isLoggedIn) openContactEditModal('email')">
-                    <span class="profile-item-icon">✉️</span>
-                    <div class="profile-item-content">
-                        <div class="profile-item-label">이메일</div>
-                        <div class="profile-item-value" id="contactEmailValue">
-                            <a href="mailto:example@email.com">example@email.com</a>
-                        </div>
-                    </div>
-                    <span class="contact-edit-icon">✏️</span>
+                <div id="contactItemsContainer">
+                    <!-- 동적으로 렌더링됨 -->
                 </div>
-                <div class="profile-item contact-editable" id="githubItem" style="display: none;" onclick="if(isLoggedIn) openContactEditModal('github')">
-                    <span class="profile-item-icon">💻</span>
-                    <div class="profile-item-content">
-                        <div class="profile-item-label">GitHub</div>
-                        <div class="profile-item-value" id="contactGithubValue">
-                            <a href="#" target="_blank">github.com</a>
-                        </div>
-                    </div>
-                    <span class="contact-edit-icon">✏️</span>
-                </div>
-                <div class="profile-item contact-editable" id="linkedinItem" style="display: none;" onclick="if(isLoggedIn) openContactEditModal('linkedin')">
-                    <span class="profile-item-icon">💼</span>
-                    <div class="profile-item-content">
-                        <div class="profile-item-label">LinkedIn</div>
-                        <div class="profile-item-value" id="contactLinkedinValue">
-                            <a href="#" target="_blank">linkedin.com</a>
-                        </div>
-                    </div>
-                    <span class="contact-edit-icon">✏️</span>
-                </div>
-                <div class="profile-item contact-editable" onclick="if(isLoggedIn) openContactEditModal('copyright')">
-                    <span class="profile-item-icon">©️</span>
-                    <div class="profile-item-content">
-                        <div class="profile-item-label">Copyright</div>
-                        <div class="profile-item-value" id="contactCopyrightValue">© 2026 포트폴리오</div>
-                    </div>
-                    <span class="contact-edit-icon">✏️</span>
-                </div>
+                <button class="contact-add-btn" id="contactAddBtn" onclick="openContactAddModal()" style="display: none;">+ 연락처 추가</button>
             </div>
-
-            <button class="profile-edit-btn" id="profileEditBtn" onclick="openProfileModal()">✏️ 프로필 수정</button>
 
             <div style="margin-top: auto; text-align: center; padding-top: 20px;">
                 <p style="font-size: 0.7rem; color: var(--text-light);" id="copyrightText">© 2026 게임 기획자 포트폴리오</p>
@@ -1695,21 +1739,63 @@
     </div>
 
     <!-- Contact 개별 수정 모달 -->
+    <!-- Contact 수정 모달 -->
     <div class="modal-overlay" id="contactEditModal">
         <div class="modal">
             <h2 class="modal-title" id="contactEditTitle">✏️ 연락처 수정</h2>
-            <input type="hidden" id="contactEditType">
+            <input type="hidden" id="contactEditIndex">
             <div class="form-group">
-                <label class="form-label" id="contactEditLabel">값</label>
-                <input type="text" class="form-input" id="contactEditValue" placeholder="">
+                <label class="form-label">아이콘</label>
+                <div class="icon-picker" id="contactEditIconPicker">
+                    <!-- 아이콘 옵션 동적 생성 -->
+                </div>
+                <input type="hidden" id="contactEditIcon">
             </div>
-            <div class="form-group" id="contactVisibilityGroup" style="display: none;">
-                <label class="form-label">
-                    <input type="checkbox" id="contactEditVisible" checked> 표시하기
-                </label>
+            <div class="form-group">
+                <label class="form-label">항목 이름</label>
+                <input type="text" class="form-input" id="contactEditLabel" placeholder="예: 이메일, 전화번호">
             </div>
-            <button class="form-btn primary" onclick="saveContactEdit()">저장</button>
-            <button class="form-btn secondary" onclick="closeModal('contactEditModal')">취소</button>
+            <div class="form-group">
+                <label class="form-label">값</label>
+                <input type="text" class="form-input" id="contactEditValue" placeholder="값을 입력하세요">
+            </div>
+            <div class="form-group">
+                <label class="form-label">링크 URL (선택사항)</label>
+                <input type="text" class="form-input" id="contactEditLink" placeholder="https://...">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="form-btn primary" onclick="saveContactEdit()">저장</button>
+                <button class="form-btn secondary" onclick="closeModal('contactEditModal')">취소</button>
+                <button class="form-btn" id="contactDeleteBtn" onclick="deleteContactItem()" style="background: var(--pastel-red-light); color: var(--pastel-red-dark); margin-left: auto;">삭제</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact 추가 모달 -->
+    <div class="modal-overlay" id="contactAddModal">
+        <div class="modal">
+            <h2 class="modal-title">➕ 연락처 추가</h2>
+            <div class="form-group">
+                <label class="form-label">아이콘 선택</label>
+                <div class="icon-picker" id="contactAddIconPicker">
+                    <!-- 아이콘 옵션 동적 생성 -->
+                </div>
+                <input type="hidden" id="contactAddIcon" value="📧">
+            </div>
+            <div class="form-group">
+                <label class="form-label">항목 이름 *</label>
+                <input type="text" class="form-input" id="contactAddLabel" placeholder="예: 이메일, 전화번호, 블로그">
+            </div>
+            <div class="form-group">
+                <label class="form-label">값 *</label>
+                <input type="text" class="form-input" id="contactAddValue" placeholder="값을 입력하세요">
+            </div>
+            <div class="form-group">
+                <label class="form-label">링크 URL (선택사항)</label>
+                <input type="text" class="form-input" id="contactAddLink" placeholder="https://...">
+            </div>
+            <button class="form-btn primary" onclick="saveContactAdd()">추가</button>
+            <button class="form-btn secondary" onclick="closeModal('contactAddModal')">취소</button>
         </div>
     </div>
 
@@ -1772,7 +1858,7 @@
             <h2 class="modal-title" id="addModalTitle">📄 새 항목 추가</h2>
             <input type="hidden" id="addCategory">
             <div class="form-group">
-                <label class="form-label">파일 업로드 (최대 10MB)</label>
+                <label class="form-label">파일 업로드 (최대 20MB)</label>
                 <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('fileInput').click()">
                     <div class="file-upload-icon">📁</div>
                     <div class="file-upload-text">클릭하거나 파일을 드래그하세요</div>
@@ -1803,7 +1889,7 @@
                 <div class="thumbnail-upload-area" id="thumbnailUploadArea" onclick="document.getElementById('thumbnailInput').click()" tabindex="0">
                     <div class="thumbnail-placeholder" id="thumbnailPlaceholder">
                         <span>🖼️</span>
-                        <span>클릭 또는 Ctrl+V</span>
+                        <span>클릭, 드래그 또는 Ctrl+V</span>
                     </div>
                     <img class="thumbnail-preview-img" id="thumbnailPreviewImg" style="display: none;">
                     <button type="button" class="thumbnail-remove-btn" id="thumbnailRemoveBtn" onclick="event.stopPropagation(); removeThumbnail()" style="display: none;">×</button>
@@ -1845,7 +1931,7 @@
                 <div class="thumbnail-upload-area" id="editThumbnailUploadArea" onclick="document.getElementById('editThumbnailInput').click()" tabindex="0">
                     <div class="thumbnail-placeholder" id="editThumbnailPlaceholder">
                         <span>🖼️</span>
-                        <span>클릭 또는 Ctrl+V</span>
+                        <span>클릭, 드래그 또는 Ctrl+V</span>
                     </div>
                     <img class="thumbnail-preview-img" id="editThumbnailPreviewImg" style="display: none;">
                     <button type="button" class="thumbnail-remove-btn" id="editThumbnailRemoveBtn" onclick="event.stopPropagation(); removeEditThumbnail()" style="display: none;">×</button>
@@ -1878,7 +1964,7 @@
                 <div class="file-upload-area" id="editFileUploadArea" onclick="document.getElementById('editFileInput').click()">
                     <div class="file-upload-icon">📁</div>
                     <div class="file-upload-text">새 파일 선택 (변경 시에만)</div>
-                    <div class="file-upload-hint">최대 10MB</div>
+                    <div class="file-upload-hint">최대 20MB</div>
                 </div>
                 <input type="file" id="editFileInput" style="display: none;" onchange="handleEditFileSelect(event)">
                 <div id="editNewFileInfo" style="margin-top: 10px; padding: 10px; background: var(--pastel-green-light); border: 1px solid var(--pastel-green); border-radius: 8px; font-size: 0.8rem; display: none;">
@@ -1894,7 +1980,7 @@
     </div>
 
     <!-- Firebase SDK -->
-    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     
@@ -1941,7 +2027,7 @@
         let subTitleColor = '#6a6a6a';
         let subTitleSize = 0.9;
 
-        const MAX_FILE_SIZE = 10 * 1024 * 1024;
+        const MAX_FILE_SIZE = 20 * 1024 * 1024;
         const MAX_THUMBNAIL_SIZE = 2 * 1024 * 1024;
 
         // 히스토리 (세션 기반 - 페이지 새로고침 시 초기화)
@@ -2679,35 +2765,103 @@
             }
         }
 
+        // 추천 아이콘 목록
+        const CONTACT_ICONS = ['✉️', '📧', '📞', '💼', '💻', '🔗', '🌐', '📝', '📱', '🎮', '🎨', '📷', '🎵', '📺', '🐦', '📌', '🏠', '👤'];
+
+        // 연락처 데이터 캐시
+        let cachedFooterData = null;
+
+        // 연락처 데이터 로드 및 렌더링
         async function loadFooter() {
-            const footer = await getFooter() || {};
+            let footer = await getFooter() || {};
+            let needsSave = false;
             
-            const emailValue = document.getElementById('contactEmailValue');
-            if (footer.email) {
-                emailValue.innerHTML = `<a href="mailto:${footer.email}">${footer.email}</a>`;
-            } else {
-                emailValue.innerHTML = '<span style="color: var(--text-light);">미설정</span>';
+            // contacts 배열이 없으면 기존 데이터를 마이그레이션
+            if (!footer.contacts) {
+                footer.contacts = [];
+                if (footer.email) {
+                    footer.contacts.push({ icon: '✉️', label: '이메일', value: footer.email, link: 'mailto:' + footer.email });
+                }
+                if (footer.github) {
+                    footer.contacts.push({ icon: '💻', label: 'GitHub', value: footer.github, link: footer.github });
+                }
+                if (footer.linkedin) {
+                    footer.contacts.push({ icon: '💼', label: 'LinkedIn', value: footer.linkedin, link: footer.linkedin });
+                }
+                if (footer.copyright) {
+                    footer.contacts.push({ icon: '©️', label: 'Copyright', value: footer.copyright, link: '' });
+                }
+                
+                // 마이그레이션 데이터가 있으면 저장 플래그
+                if (footer.contacts.length > 0) {
+                    needsSave = true;
+                }
             }
-
-            const githubItem = document.getElementById('githubItem');
-            if (footer.github) {
-                githubItem.style.display = 'flex';
-                document.getElementById('contactGithubValue').innerHTML = `<a href="${footer.github}" target="_blank">${footer.github}</a>`;
-            } else {
-                githubItem.style.display = 'none';
+            
+            // 캐시에 저장
+            cachedFooterData = footer;
+            
+            // 마이그레이션된 데이터 저장 (로그인 상태일 때만)
+            if (needsSave && isLoggedIn) {
+                await saveFooterData(footer);
+                console.log('연락처 데이터 마이그레이션 완료');
             }
-
-            const linkedinItem = document.getElementById('linkedinItem');
-            if (footer.linkedin) {
-                linkedinItem.style.display = 'flex';
-                document.getElementById('contactLinkedinValue').innerHTML = `<a href="${footer.linkedin}" target="_blank">${footer.linkedin}</a>`;
-            } else {
-                linkedinItem.style.display = 'none';
-            }
-
-            const copyrightValue = footer.copyright || '© 2026 포트폴리오';
+            
+            renderContactItems(footer.contacts || []);
+            
+            // Copyright 업데이트 (별도 표시용)
+            const copyrightItem = (footer.contacts || []).find(c => c.label === 'Copyright');
+            const copyrightValue = copyrightItem?.value || footer.copyright || '© 2026 포트폴리오';
             document.getElementById('copyrightText').textContent = copyrightValue;
-            document.getElementById('contactCopyrightValue').textContent = copyrightValue;
+        }
+
+        function renderContactItems(contacts) {
+            const container = document.getElementById('contactItemsContainer');
+            
+            if (contacts.length === 0) {
+                container.innerHTML = `<div style="text-align: center; padding: 10px; color: var(--text-light); font-size: 0.8rem;">연락처를 추가해주세요</div>`;
+            } else {
+                container.innerHTML = contacts.map((contact, index) => `
+                    <div class="profile-item contact-editable" onclick="if(isLoggedIn) openContactEditModal(${index})">
+                        <span class="profile-item-icon">${contact.icon}</span>
+                        <div class="profile-item-content">
+                            <div class="profile-item-label">${contact.label}</div>
+                            <div class="profile-item-value">
+                                ${contact.link ? `<a href="${contact.link}" target="_blank" onclick="event.stopPropagation()">${contact.value}</a>` : contact.value}
+                            </div>
+                        </div>
+                        <span class="contact-edit-icon">✏️</span>
+                    </div>
+                `).join('');
+            }
+            
+            // 연락처 추가 버튼 표시
+            const addBtn = document.getElementById('contactAddBtn');
+            if (addBtn) {
+                addBtn.style.display = isLoggedIn ? 'block' : 'none';
+            }
+        }
+
+        function renderIconPicker(containerId, selectedIcon) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = CONTACT_ICONS.map(icon => `
+                <div class="icon-option ${icon === selectedIcon ? 'selected' : ''}" onclick="selectIcon('${containerId}', '${icon}')">${icon}</div>
+            `).join('');
+        }
+
+        function selectIcon(containerId, icon) {
+            // 선택 상태 업데이트
+            document.querySelectorAll(`#${containerId} .icon-option`).forEach(el => {
+                el.classList.remove('selected');
+                if (el.textContent === icon) el.classList.add('selected');
+            });
+            
+            // hidden input 업데이트
+            if (containerId === 'contactEditIconPicker') {
+                document.getElementById('contactEditIcon').value = icon;
+            } else if (containerId === 'contactAddIconPicker') {
+                document.getElementById('contactAddIcon').value = icon;
+            }
         }
 
         // ============ 프로필 모달 ============
@@ -2929,72 +3083,122 @@
             }
         }
 
-        // ============ 연락처 개별 수정 ============
-        let currentFooterData = {};
+        // ============ 연락처 수정/추가 ============
+        let editingContactIndex = -1;
 
-        function openContactEditModal(type) {
+        async function openContactEditModal(index) {
             if (!isLoggedIn) return;
             
-            const titles = {
-                email: '✉️ 이메일 수정',
-                github: '💻 GitHub 수정',
-                linkedin: '💼 LinkedIn 수정',
-                copyright: '©️ Copyright 수정'
-            };
+            // 캐시된 데이터 사용 (마이그레이션 적용된 데이터)
+            if (!cachedFooterData || !cachedFooterData.contacts) {
+                await loadFooter();
+            }
             
-            const labels = {
-                email: '이메일 주소',
-                github: 'GitHub URL',
-                linkedin: 'LinkedIn URL',
-                copyright: 'Copyright 문구'
-            };
+            const contacts = cachedFooterData?.contacts || [];
+            const contact = contacts[index];
             
-            const placeholders = {
-                email: 'example@email.com',
-                github: 'https://github.com/username',
-                linkedin: 'https://linkedin.com/in/username',
-                copyright: '© 2026 포트폴리오'
-            };
+            if (!contact) {
+                console.error('연락처를 찾을 수 없습니다. index:', index);
+                return;
+            }
             
-            document.getElementById('contactEditTitle').textContent = titles[type];
-            document.getElementById('contactEditLabel').textContent = labels[type];
-            document.getElementById('contactEditValue').placeholder = placeholders[type];
-            document.getElementById('contactEditType').value = type;
+            editingContactIndex = index;
             
-            // 현재 값 로드
-            getFooter().then(footer => {
-                currentFooterData = footer || {};
-                document.getElementById('contactEditValue').value = currentFooterData[type] || '';
-                
-                // GitHub, LinkedIn은 표시 여부 옵션 표시
-                if (type === 'github' || type === 'linkedin') {
-                    document.getElementById('contactVisibilityGroup').style.display = 'block';
-                    document.getElementById('contactEditVisible').checked = !!currentFooterData[type];
-                } else {
-                    document.getElementById('contactVisibilityGroup').style.display = 'none';
-                }
-            });
+            document.getElementById('contactEditTitle').textContent = '✏️ 연락처 수정';
+            document.getElementById('contactEditIndex').value = index;
+            document.getElementById('contactEditLabel').value = contact.label || '';
+            document.getElementById('contactEditValue').value = contact.value || '';
+            document.getElementById('contactEditLink').value = contact.link || '';
+            document.getElementById('contactEditIcon').value = contact.icon || '📧';
+            
+            // 아이콘 선택기 렌더링
+            renderIconPicker('contactEditIconPicker', contact.icon || '📧');
+            
+            // 삭제 버튼 표시
+            document.getElementById('contactDeleteBtn').style.display = 'block';
             
             openModal('contactEditModal');
         }
 
         async function saveContactEdit() {
-            const type = document.getElementById('contactEditType').value;
+            const index = parseInt(document.getElementById('contactEditIndex').value);
+            const icon = document.getElementById('contactEditIcon').value;
+            const label = document.getElementById('contactEditLabel').value.trim();
             const value = document.getElementById('contactEditValue').value.trim();
+            const link = document.getElementById('contactEditLink').value.trim();
             
-            // 표시 여부 확인 (GitHub, LinkedIn만)
-            const visible = document.getElementById('contactEditVisible')?.checked !== false;
-            
-            // 현재 데이터 업데이트
-            if (type === 'github' || type === 'linkedin') {
-                currentFooterData[type] = visible ? value : '';
-            } else {
-                currentFooterData[type] = value;
+            if (!label || !value) {
+                alert('항목 이름과 값을 입력해주세요.');
+                return;
             }
             
-            await saveFooterData(currentFooterData);
+            // 캐시된 데이터 사용
+            if (!cachedFooterData) {
+                cachedFooterData = {};
+            }
+            if (!cachedFooterData.contacts) {
+                cachedFooterData.contacts = [];
+            }
+            
+            cachedFooterData.contacts[index] = { icon, label, value, link };
+            
+            await saveFooterData(cachedFooterData);
             await loadFooter();
             closeModal('contactEditModal');
+        }
+
+        async function deleteContactItem() {
+            if (!confirm('이 연락처 항목을 삭제하시겠습니까?')) return;
+            
+            const index = parseInt(document.getElementById('contactEditIndex').value);
+            
+            if (cachedFooterData && cachedFooterData.contacts) {
+                cachedFooterData.contacts.splice(index, 1);
+                await saveFooterData(cachedFooterData);
+                await loadFooter();
+            }
+            
+            closeModal('contactEditModal');
+        }
+
+        function openContactAddModal() {
+            if (!isLoggedIn) return;
+            
+            document.getElementById('contactAddLabel').value = '';
+            document.getElementById('contactAddValue').value = '';
+            document.getElementById('contactAddLink').value = '';
+            document.getElementById('contactAddIcon').value = '📧';
+            
+            // 아이콘 선택기 렌더링
+            renderIconPicker('contactAddIconPicker', '📧');
+            
+            openModal('contactAddModal');
+        }
+
+        async function saveContactAdd() {
+            const icon = document.getElementById('contactAddIcon').value;
+            const label = document.getElementById('contactAddLabel').value.trim();
+            const value = document.getElementById('contactAddValue').value.trim();
+            const link = document.getElementById('contactAddLink').value.trim();
+            
+            if (!label || !value) {
+                alert('항목 이름과 값을 입력해주세요.');
+                return;
+            }
+            
+            // 캐시된 데이터 사용
+            if (!cachedFooterData) {
+                cachedFooterData = {};
+            }
+            if (!cachedFooterData.contacts) {
+                cachedFooterData.contacts = [];
+            }
+            
+            cachedFooterData.contacts.push({ icon, label, value, link });
+            
+            await saveFooterData(cachedFooterData);
+            await loadFooter();
+            closeModal('contactAddModal');
         }
 
         // ============ 섹션 관련 ============
@@ -3140,7 +3344,7 @@
 
         function handleFile(file) {
             if (file.size > MAX_FILE_SIZE) {
-                alert('파일 크기는 10MB 이하여야 합니다.');
+                alert('파일 크기는 20MB 이하여야 합니다.');
                 return;
             }
 
@@ -3168,7 +3372,10 @@
         function handleThumbnailSelect(event) {
             const file = event.target.files[0];
             if (!file) return;
+            handleThumbnailFile(file);
+        }
 
+        function handleThumbnailFile(file) {
             if (file.size > MAX_THUMBNAIL_SIZE) {
                 alert('썸네일 크기는 2MB 이하여야 합니다.');
                 return;
@@ -3375,7 +3582,11 @@
         function resetAddForm() {
             document.getElementById('itemTitle').value = '';
             document.getElementById('itemDesc').value = '';
-            document.getElementById('itemDate').value = '';
+            // 현재 날짜(월까지)를 기본값으로 설정
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            document.getElementById('itemDate').value = `${year}-${month}`;
             document.getElementById('itemLink').value = '';
             currentTags = [];
             renderTags('tagsContainer', currentTags, 'current');
@@ -3401,7 +3612,15 @@
             document.getElementById('editCategory').value = category;
             document.getElementById('editTitle').value = item.title || '';
             document.getElementById('editDesc').value = item.description || '';
-            document.getElementById('editDate').value = item.date || '';
+            // 날짜가 없으면 현재 날짜로 설정
+            if (item.date) {
+                document.getElementById('editDate').value = item.date;
+            } else {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                document.getElementById('editDate').value = `${year}-${month}`;
+            }
             
             editTags = item.tags || [];
             renderTags('editTagsContainer', editTags, 'edit');
@@ -3443,6 +3662,23 @@
             reader.readAsDataURL(file);
         }
 
+        function handleEditThumbnailFile(file) {
+            if (file.size > MAX_THUMBNAIL_SIZE) {
+                alert('이미지 크기는 2MB 이하여야 합니다.');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                editThumbnail = evt.target.result.split(',')[1];
+                editThumbnailChanged = true;
+                document.getElementById('editThumbnailPreviewImg').src = evt.target.result;
+                document.getElementById('editThumbnailPreviewImg').style.display = 'block';
+                document.getElementById('editThumbnailPlaceholder').style.display = 'none';
+                document.getElementById('editThumbnailRemoveBtn').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
         function handleEditThumbnailPaste(e) {
             const items = e.clipboardData?.items;
             if (!items) return;
@@ -3450,20 +3686,7 @@
             for (let item of items) {
                 if (item.type.indexOf('image') !== -1) {
                     const file = item.getAsFile();
-                    if (file.size > MAX_THUMBNAIL_SIZE) {
-                        alert('이미지 크기는 2MB 이하여야 합니다.');
-                        return;
-                    }
-                    const reader = new FileReader();
-                    reader.onload = (evt) => {
-                        editThumbnail = evt.target.result.split(',')[1];
-                        editThumbnailChanged = true;
-                        document.getElementById('editThumbnailPreviewImg').src = evt.target.result;
-                        document.getElementById('editThumbnailPreviewImg').style.display = 'block';
-                        document.getElementById('editThumbnailPlaceholder').style.display = 'none';
-                        document.getElementById('editThumbnailRemoveBtn').style.display = 'block';
-                    };
-                    reader.readAsDataURL(file);
+                    handleEditThumbnailFile(file);
                     e.preventDefault();
                     break;
                 }
@@ -3485,7 +3708,7 @@
             if (!file) return;
 
             if (file.size > MAX_FILE_SIZE) {
-                alert('파일 크기는 10MB 이하여야 합니다.');
+                alert('파일 크기는 20MB 이하여야 합니다.');
                 event.target.value = '';
                 return;
             }
@@ -3828,6 +4051,12 @@
             document.querySelectorAll('.contact-edit-icon').forEach(icon => {
                 icon.style.display = isLoggedIn ? '' : 'none';
             });
+            
+            // 연락처 추가 버튼
+            const contactAddBtn = document.getElementById('contactAddBtn');
+            if (contactAddBtn) {
+                contactAddBtn.style.display = isLoggedIn ? 'block' : 'none';
+            }
         }
 
         // ============ 이벤트 리스너 ============
@@ -3857,7 +4086,7 @@
                 if (e.dataTransfer.files.length) {
                     const file = e.dataTransfer.files[0];
                     if (file.size > MAX_FILE_SIZE) {
-                        alert('파일 크기는 10MB 이하여야 합니다.');
+                        alert('파일 크기는 20MB 이하여야 합니다.');
                         return;
                     }
                     editNewFile = file;
@@ -3869,9 +4098,43 @@
             // 썸네일 붙여넣기
             const thumbnailArea = document.getElementById('thumbnailUploadArea');
             thumbnailArea.addEventListener('paste', handleThumbnailPaste);
+            
+            // 썸네일 드래그 앤 드롭
+            thumbnailArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                thumbnailArea.classList.add('dragover');
+            });
+            thumbnailArea.addEventListener('dragleave', () => {
+                thumbnailArea.classList.remove('dragover');
+            });
+            thumbnailArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                thumbnailArea.classList.remove('dragover');
+                const file = e.dataTransfer.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    handleThumbnailFile(file);
+                }
+            });
 
             const editThumbnailArea = document.getElementById('editThumbnailUploadArea');
             editThumbnailArea.addEventListener('paste', handleEditThumbnailPaste);
+            
+            // 수정 모달 썸네일 드래그 앤 드롭
+            editThumbnailArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                editThumbnailArea.classList.add('dragover');
+            });
+            editThumbnailArea.addEventListener('dragleave', () => {
+                editThumbnailArea.classList.remove('dragover');
+            });
+            editThumbnailArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                editThumbnailArea.classList.remove('dragover');
+                const file = e.dataTransfer.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    handleEditThumbnailFile(file);
+                }
+            });
 
             // 프로필 이미지 붙여넣기
             const profileImageUpload = document.getElementById('profileImageUpload');
