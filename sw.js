@@ -1,18 +1,13 @@
-// Service Worker for Unity WebGL execution
-const CACHE_NAME = 'portfolio-webgl-v1';
-const virtualFolders = new Map();
+// Service Worker for Unity WebGL execution with Firebase Storage
+const CACHE_NAME = 'portfolio-webgl-v2';
 
-// Firebase Database URL (will be set from main script)
-let firebaseDbUrl = '';
+// Firebase Storage base URL
+let storageBaseUrl = '';
 
 self.addEventListener('message', (event) => {
-    if (event.data.type === 'INIT_FIREBASE') {
-        firebaseDbUrl = event.data.dbUrl;
-        console.log('Service Worker: Firebase DB URL set');
-    } else if (event.data.type === 'REGISTER_FOLDER') {
-        const { itemId, files } = event.data;
-        virtualFolders.set(itemId, files);
-        console.log('Service Worker: Registered folder', itemId, 'with', files.length, 'files');
+    if (event.data.type === 'INIT_STORAGE') {
+        storageBaseUrl = event.data.storageUrl;
+        console.log('Service Worker: Storage URL set:', storageBaseUrl);
     }
 });
 
@@ -42,42 +37,50 @@ async function handleVirtualRequest(url, request) {
 
         console.log('SW: Fetching virtual file:', itemId, filePath);
 
-        // Get folder data from Firebase
-        const folderData = await fetchFolderFromFirebase(itemId);
-        if (!folderData) {
-            console.error('SW: Folder not found:', itemId);
-            return new Response('Folder not found', { status: 404 });
-        }
-
-        // Find the requested file
-        let targetFile = null;
-
-        // If no file path (accessing /virtual/item_12345/), serve index.html
+        // Construct Firebase Storage URL
+        let storageFilePath;
         if (!filePath || filePath === '') {
-            targetFile = folderData.files.find(f =>
-                f.name === 'index.html' || f.path.endsWith('/index.html')
-            );
+            // Default to index.html for root path
+            storageFilePath = `folders/${itemId}/index.html`;
         } else {
-            // Find file by path
-            targetFile = folderData.files.find(f => {
-                const relativePath = f.path.split('/').slice(1).join('/'); // Remove folder name
-                return relativePath === filePath || f.path.endsWith('/' + filePath);
-            });
+            // Try to find the file with the exact path
+            storageFilePath = `folders/${itemId}/${filePath}`;
         }
 
-        if (!targetFile) {
-            console.error('SW: File not found:', filePath);
+        // First try: exact path
+        let fileUrl = `${storageBaseUrl}/o/${encodeURIComponent(storageFilePath)}?alt=media`;
+
+        console.log('SW: Trying file URL:', fileUrl);
+
+        let response = await fetch(fileUrl);
+
+        // If not found, try with folder name prefix (Unity builds often have this structure)
+        if (!response.ok && !filePath.includes('/')) {
+            // Try finding index.html in subfolders
+            const possiblePaths = [
+                `folders/${itemId}/${filePath}/index.html`,
+                `folders/${itemId}/${filePath}`,
+            ];
+
+            for (const path of possiblePaths) {
+                fileUrl = `${storageBaseUrl}/o/${encodeURIComponent(path)}?alt=media`;
+                response = await fetch(fileUrl);
+                if (response.ok) {
+                    console.log('SW: Found file at:', path);
+                    break;
+                }
+            }
+        }
+
+        if (!response.ok) {
+            console.error('SW: File not found:', storageFilePath);
             return new Response('File not found: ' + filePath, { status: 404 });
         }
 
-        console.log('SW: Found file:', targetFile.name, 'type:', targetFile.type);
-
-        // Convert base64 to blob
-        const blob = base64ToBlob(targetFile.data, targetFile.type || getMimeType(targetFile.name));
-
         // For HTML files, rewrite paths to virtual paths
-        if (targetFile.name.endsWith('.html')) {
-            const text = await blob.text();
+        const contentType = response.headers.get('Content-Type');
+        if (contentType && contentType.includes('text/html')) {
+            const text = await response.text();
             const rewrittenHtml = rewriteHtmlPaths(text, itemId);
             return new Response(rewrittenHtml, {
                 status: 200,
@@ -88,92 +91,13 @@ async function handleVirtualRequest(url, request) {
             });
         }
 
-        // Return file with correct MIME type
-        return new Response(blob, {
-            status: 200,
-            headers: {
-                'Content-Type': targetFile.type || getMimeType(targetFile.name),
-                'Cache-Control': 'public, max-age=3600'
-            }
-        });
+        // Return file as-is
+        return response;
 
     } catch (error) {
         console.error('SW: Error handling virtual request:', error);
         return new Response('Error: ' + error.message, { status: 500 });
     }
-}
-
-async function fetchFolderFromFirebase(itemId) {
-    try {
-        if (!firebaseDbUrl) {
-            console.error('SW: Firebase DB URL not set');
-            return null;
-        }
-
-        // Fetch file data from Firebase
-        const fileUrl = `${firebaseDbUrl}/files/${itemId}.json`;
-        const response = await fetch(fileUrl);
-
-        if (!response.ok) {
-            console.error('SW: Firebase fetch failed:', response.status);
-            return null;
-        }
-
-        const fileDataString = await response.json();
-        if (!fileDataString) {
-            return null;
-        }
-
-        // Parse folder data
-        const folderData = JSON.parse(fileDataString);
-        return folderData;
-
-    } catch (error) {
-        console.error('SW: Error fetching from Firebase:', error);
-        return null;
-    }
-}
-
-function base64ToBlob(base64, mimeType) {
-    // Remove data URL prefix if present
-    let pureBase64 = base64;
-    if (base64.includes(',')) {
-        pureBase64 = base64.split(',')[1];
-    }
-
-    const byteCharacters = atob(pureBase64);
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-    const byteArray = new Uint8Array(byteNumbers);
-    return new Blob([byteArray], { type: mimeType });
-}
-
-function getMimeType(filename) {
-    const ext = filename.split('.').pop().toLowerCase();
-    const mimeTypes = {
-        'html': 'text/html',
-        'js': 'application/javascript',
-        'json': 'application/json',
-        'wasm': 'application/wasm',
-        'data': 'application/octet-stream',
-        'unityweb': 'application/octet-stream',
-        'png': 'image/png',
-        'jpg': 'image/jpeg',
-        'jpeg': 'image/jpeg',
-        'gif': 'image/gif',
-        'css': 'text/css',
-        'svg': 'image/svg+xml',
-        'ico': 'image/x-icon',
-        'woff': 'font/woff',
-        'woff2': 'font/woff2',
-        'ttf': 'font/ttf',
-        'mp3': 'audio/mpeg',
-        'mp4': 'video/mp4',
-        'webm': 'video/webm'
-    };
-    return mimeTypes[ext] || 'application/octet-stream';
 }
 
 function rewriteHtmlPaths(html, itemId) {

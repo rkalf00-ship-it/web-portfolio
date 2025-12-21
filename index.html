@@ -2042,6 +2042,7 @@
     <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 
     <!-- JSZip for folder download -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -2056,6 +2057,7 @@
 
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
+        const storage = firebase.storage();
 
         // Firebase 연결 상태 확인
         database.ref('.info/connected').on('value', (snapshot) => {
@@ -2092,8 +2094,9 @@
         let subTitleColor = '#6a6a6a';
         let subTitleSize = 0.9;
 
-        const MAX_FILE_SIZE = 20 * 1024 * 1024;
-        const MAX_THUMBNAIL_SIZE = 2 * 1024 * 1024;
+        const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500MB (단일 파일)
+        const MAX_FOLDER_SIZE = 500 * 1024 * 1024; // 500MB (폴더 전체)
+        const MAX_THUMBNAIL_SIZE = 2 * 1024 * 1024; // 2MB
 
         // 히스토리 (세션 기반 - 페이지 새로고침 시 초기화)
         let viewHistory = [];
@@ -2245,65 +2248,151 @@
         }
 
         // 파일 관련
-        async function saveFile(fileId, base64Data) {
+        // ============ Firebase Storage 파일 관리 ============
+
+        // 단일 파일을 Storage에 저장 (Base64 또는 File 객체)
+        async function saveFile(fileId, data, metadata = {}) {
             try {
-                console.log('saveFile 호출:', fileId, '데이터 길이:', base64Data?.length);
-                await database.ref('files/' + fileId).set(base64Data);
+                console.log('saveFile 호출:', fileId, '타입:', typeof data);
+
+                let blob;
+                if (typeof data === 'string') {
+                    // Base64 문자열을 Blob으로 변환
+                    blob = base64ToBlob(data, metadata.type || 'application/octet-stream');
+                } else if (data instanceof Blob || data instanceof File) {
+                    blob = data;
+                } else {
+                    throw new Error('지원하지 않는 데이터 타입');
+                }
+
+                const storageRef = storage.ref('files/' + fileId);
+                const uploadTask = await storageRef.put(blob, metadata);
+
                 console.log('saveFile 완료:', fileId);
-                
-                // 저장 후 검증
-                const verifySnapshot = await database.ref('files/' + fileId).once('value');
-                const verifyData = verifySnapshot.val();
-                console.log('saveFile 검증:', verifyData ? '저장 성공' : '저장 실패');
+                return uploadTask;
             } catch (error) {
                 console.error('saveFile error:', error);
                 throw error;
             }
         }
 
+        // 폴더 전체를 Storage에 저장
+        async function saveFolder(folderId, files, onProgress) {
+            try {
+                console.log('폴더 저장 시작:', folderId, '파일 개수:', files.length);
+
+                const uploadPromises = [];
+                let completedCount = 0;
+
+                for (const file of files) {
+                    const filePath = `folders/${folderId}/${file.webkitRelativePath || file.name}`;
+                    const storageRef = storage.ref(filePath);
+
+                    const uploadPromise = storageRef.put(file).then(() => {
+                        completedCount++;
+                        if (onProgress) {
+                            onProgress(completedCount, files.length);
+                        }
+                        return {
+                            path: file.webkitRelativePath || file.name,
+                            name: file.name,
+                            type: file.type,
+                            size: file.size
+                        };
+                    });
+
+                    uploadPromises.push(uploadPromise);
+                }
+
+                const uploadedFiles = await Promise.all(uploadPromises);
+                console.log('폴더 저장 완료:', folderId);
+
+                return uploadedFiles;
+            } catch (error) {
+                console.error('saveFolder error:', error);
+                throw error;
+            }
+        }
+
+        // Storage에서 파일 다운로드 URL 가져오기
         async function getFile(fileId) {
             console.log('=== getFile 시작 ===');
             console.log('요청 파일 ID:', fileId);
-            console.log('전체 경로:', 'files/' + fileId);
-            
+
             try {
-                const ref = database.ref('files/' + fileId);
-                console.log('Firebase ref 생성됨');
-                
-                const snapshot = await ref.once('value');
-                console.log('Firebase 조회 완료');
-                console.log('snapshot.exists():', snapshot.exists());
-                
-                const data = snapshot.val();
-                
-                if (data) {
-                    console.log('데이터 타입:', typeof data);
-                    console.log('데이터 길이:', data.length || '알 수 없음');
-                    console.log('데이터 시작 부분:', data.substring ? data.substring(0, 50) + '...' : '문자열 아님');
-                } else {
-                    console.log('데이터가 null 또는 undefined');
-                }
-                
-                return data;
+                const storageRef = storage.ref('files/' + fileId);
+                const url = await storageRef.getDownloadURL();
+
+                console.log('다운로드 URL 조회 완료');
+                return url;
             } catch (error) {
                 console.error('=== getFile 오류 ===');
                 console.error('오류 코드:', error.code);
                 console.error('오류 메시지:', error.message);
-                console.error('전체 오류:', error);
-                
-                if (error.code === 'PERMISSION_DENIED') {
-                    console.error('권한 오류: Firebase Database 규칙을 확인하세요.');
+
+                if (error.code === 'storage/object-not-found') {
+                    console.error('파일을 찾을 수 없습니다:', fileId);
                 }
-                
+
                 return null;
             }
         }
 
+        // Storage에서 폴더의 모든 파일 목록 가져오기
+        async function getFolderFiles(folderId) {
+            try {
+                console.log('폴더 파일 목록 조회:', folderId);
+                const folderRef = storage.ref('folders/' + folderId);
+                const result = await folderRef.listAll();
+
+                const files = await Promise.all(
+                    result.items.map(async (itemRef) => {
+                        const url = await itemRef.getDownloadURL();
+                        const metadata = await itemRef.getMetadata();
+
+                        return {
+                            path: itemRef.fullPath.replace(`folders/${folderId}/`, ''),
+                            name: itemRef.name,
+                            type: metadata.contentType,
+                            size: metadata.size,
+                            url: url
+                        };
+                    })
+                );
+
+                console.log('폴더 파일 목록 조회 완료:', files.length, '개');
+                return files;
+            } catch (error) {
+                console.error('getFolderFiles error:', error);
+                return [];
+            }
+        }
+
+        // Storage에서 파일 삭제
         async function deleteFile(fileId) {
             try {
-                await database.ref('files/' + fileId).remove();
+                const storageRef = storage.ref('files/' + fileId);
+                await storageRef.delete();
+                console.log('파일 삭제 완료:', fileId);
             } catch (error) {
                 console.error('deleteFile error:', error);
+            }
+        }
+
+        // Storage에서 폴더 전체 삭제
+        async function deleteFolder(folderId) {
+            try {
+                const folderRef = storage.ref('folders/' + folderId);
+                const result = await folderRef.listAll();
+
+                // 모든 파일 삭제
+                await Promise.all(
+                    result.items.map(itemRef => itemRef.delete())
+                );
+
+                console.log('폴더 삭제 완료:', folderId);
+            } catch (error) {
+                console.error('deleteFolder error:', error);
             }
         }
 
@@ -2452,29 +2541,22 @@
                 console.log('1. 파일 ID 존재:', item.fileId);
 
                 try {
-                    const fileData = await getFile(item.fileId);
+                    // 폴더 타입인 경우는 ZIP 다운로드만 지원 (클릭 시)
+                    if (item.fileType === 'folder') {
+                        console.log('폴더 타입 - ZIP 다운로드');
+                        await downloadFolder(item.id);
+                        return;
+                    }
 
-                    if (fileData && fileData.length > 0) {
-                        console.log('2. 파일 데이터 조회 성공, 길이:', fileData.length);
+                    // 단일 파일은 Storage URL로 열기
+                    const fileUrl = await getFile(item.fileId);
 
-                        // 폴더 타입인 경우 ZIP으로 다운로드
-                        if (item.fileType === 'folder') {
-                            console.log('3. 폴더 타입 - ZIP 생성 시작');
-                            await downloadFolderAsZip(fileData, item.fileName || item.title);
-                            console.log('4. ZIP 다운로드 완료');
-                            return;
-                        }
-
-                        const mimeType = item.mimeType || getMimeType(item.fileType);
-                        console.log('3. MIME 타입:', mimeType);
-
-                        const blob = base64ToBlob(fileData, mimeType);
-                        const url = URL.createObjectURL(blob);
-                        console.log('4. Blob URL 생성 완료');
+                    if (fileUrl) {
+                        console.log('2. 파일 URL 조회 성공:', fileUrl);
 
                         // a 태그를 사용하여 파일 열기
                         const link = document.createElement('a');
-                        link.href = url;
+                        link.href = fileUrl;
                         link.target = '_blank';
                         link.rel = 'noopener noreferrer';
 
@@ -2488,12 +2570,11 @@
                         link.click();
                         document.body.removeChild(link);
 
-                        setTimeout(() => URL.revokeObjectURL(url), 1000);
-                        console.log('5. 파일 열기 완료');
+                        console.log('3. 파일 열기 완료');
                         return;
                     } else {
-                        console.error('파일 데이터 없음 - fileId:', item.fileId);
-                        alert('파일 데이터를 찾을 수 없습니다.\n\nfileId: ' + item.fileId + '\n\nFirebase에서 파일이 삭제되었거나 권한이 없을 수 있습니다.');
+                        console.error('파일 URL 없음 - fileId:', item.fileId);
+                        alert('파일을 찾을 수 없습니다.\n\nfileId: ' + item.fileId + '\n\nFirebase Storage에서 파일이 삭제되었거나 권한이 없을 수 있습니다.');
                         return;
                     }
                 } catch (error) {
@@ -2610,7 +2691,7 @@
             }
         }
 
-        // 폴더 다운로드 (카드 버튼용)
+        // 폴더 다운로드 (Firebase Storage에서 ZIP으로)
         async function downloadFolder(itemId) {
             try {
                 const item = itemsCache[itemId] || (await database.ref('metadata/' + itemId).once('value')).val();
@@ -2619,16 +2700,50 @@
                     return;
                 }
 
-                const fileData = await getFile(item.fileId);
-                if (!fileData) {
-                    alert('폴더 데이터를 찾을 수 없습니다.');
+                // Firebase Storage에서 폴더의 모든 파일 가져오기
+                const files = await getFolderFiles(item.fileId);
+                if (!files || files.length === 0) {
+                    alert('폴더에 파일이 없습니다.');
                     return;
                 }
 
-                await downloadFolderAsZip(fileData, item.fileName || item.title);
+                // ZIP 파일 생성
+                const zip = new JSZip();
+                const folderName = item.fileName || item.title;
+
+                console.log('ZIP 생성 시작:', files.length, '개 파일');
+
+                // 모든 파일을 다운로드하여 ZIP에 추가
+                for (const file of files) {
+                    try {
+                        const response = await fetch(file.url);
+                        const blob = await response.blob();
+                        zip.file(file.path, blob);
+                    } catch (error) {
+                        console.error('파일 다운로드 실패:', file.path, error);
+                    }
+                }
+
+                // ZIP 생성 및 다운로드
+                const zipBlob = await zip.generateAsync({
+                    type: 'blob',
+                    compression: 'DEFLATE',
+                    compressionOptions: { level: 6 }
+                });
+
+                const url = URL.createObjectURL(zipBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `${folderName}.zip`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+                console.log('ZIP 다운로드 완료');
             } catch (error) {
                 console.error('폴더 다운로드 오류:', error);
-                alert('폴더 다운로드 중 오류가 발생했습니다.');
+                alert('폴더 다운로드 중 오류가 발생했습니다.\n\n' + error.message);
             }
         }
 
@@ -2672,11 +2787,11 @@
                 // Service Worker가 활성화될 때까지 대기
                 await navigator.serviceWorker.ready;
 
-                // Firebase DB URL 전송
-                const dbUrl = firebaseConfig.databaseURL;
+                // Firebase Storage URL 전송
+                const storageUrl = `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.apiKey.split(':')[0]}-default-appspot.com`;
                 registration.active.postMessage({
-                    type: 'INIT_FIREBASE',
-                    dbUrl: dbUrl
+                    type: 'INIT_STORAGE',
+                    storageUrl: 'https://firebasestorage.googleapis.com/v0/b/web-portfolio-e7e05.appspot.com'
                 });
 
                 console.log('Service Worker 초기화 완료');
@@ -3778,7 +3893,7 @@
                 let fileName = null;
                 let folderData = null;
 
-                // 폴더 업로드 처리
+                // 폴더 업로드 처리 (Firebase Storage)
                 if (selectedFolder) {
                     console.log('폴더 업로드 시작:', selectedFolder.name);
                     document.getElementById('uploadProgress').classList.add('show');
@@ -3787,39 +3902,18 @@
                     fileType = 'folder';
                     fileName = selectedFolder.name;
 
-                    // 폴더 내 모든 파일을 Base64로 변환
-                    folderData = {
-                        name: selectedFolder.name,
-                        files: []
-                    };
-
-                    const totalFiles = selectedFolder.files.length;
-                    for (let i = 0; i < totalFiles; i++) {
-                        const file = selectedFolder.files[i];
-                        const base64 = await fileToBase64(file);
-
-                        folderData.files.push({
-                            path: file.webkitRelativePath,
-                            name: file.name,
-                            type: file.type,
-                            size: file.size,
-                            data: base64
-                        });
-
-                        // 진행률 업데이트
-                        const progress = Math.round(((i + 1) / totalFiles) * 100);
+                    // Firebase Storage에 폴더 저장 (원본 파일 그대로)
+                    await saveFolder(itemId, selectedFolder.files, (completed, total) => {
+                        const progress = Math.round((completed / total) * 100);
                         document.getElementById('progressFill').style.width = progress + '%';
-                        document.getElementById('progressText').textContent = `업로드 중... ${progress}% (${i + 1}/${totalFiles})`;
-                    }
+                        document.getElementById('progressText').textContent = `업로드 중... ${progress}% (${completed}/${total})`;
+                    });
 
-                    // 폴더 데이터를 JSON으로 저장
-                    await saveFile(fileId, JSON.stringify(folderData));
                     console.log('폴더 저장 완료');
-
                     document.getElementById('progressFill').style.width = '100%';
                     document.getElementById('progressText').textContent = '업로드 완료!';
                 }
-                // 단일 파일 업로드 처리
+                // 단일 파일 업로드 처리 (Firebase Storage)
                 else if (selectedFile) {
                     console.log('파일 업로드 시작:', selectedFile.name);
                     document.getElementById('uploadProgress').classList.add('show');
@@ -3829,9 +3923,8 @@
                     mimeType = selectedFile.type;
                     fileName = selectedFile.name;
 
-                    const base64 = await fileToBase64(selectedFile);
-                    console.log('Base64 변환 완료, 길이:', base64.length);
-                    await saveFile(fileId, base64);
+                    // Firebase Storage에 파일 저장 (File 객체 그대로)
+                    await saveFile(fileId, selectedFile, { contentType: mimeType });
                     console.log('파일 저장 완료');
 
                     document.getElementById('progressFill').style.width = '100%';
