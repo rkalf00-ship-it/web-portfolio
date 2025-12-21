@@ -879,6 +879,50 @@
         .card-edit-btn.show { display: flex; }
         .card-edit-btn:hover { background: var(--pastel-gold); }
 
+        /* 카드 액션 버튼 (실행, 다운로드) */
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .card-action-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .card-action-btn.primary {
+            background: var(--pastel-blue);
+            color: var(--pastel-blue-dark);
+        }
+
+        .card-action-btn.primary:hover {
+            background: var(--pastel-blue-dark);
+            color: white;
+        }
+
+        .card-action-btn.secondary {
+            background: var(--bg-profile);
+            color: var(--text-mid);
+            border: 1px solid var(--border-light);
+        }
+
+        .card-action-btn.secondary:hover {
+            background: var(--pastel-gold-light);
+            border-color: var(--pastel-gold);
+            color: var(--pastel-gold-dark);
+        }
+
         /* 드래그 핸들 */
         .drag-handle {
             position: absolute;
@@ -1621,7 +1665,17 @@
     <div class="modal-overlay" id="settingsModal">
         <div class="modal">
             <h2 class="modal-title">⚙️ 설정</h2>
-            <p style="text-align: center; color: var(--text-mid); margin-bottom: 20px;">
+            <div class="form-group">
+                <label class="form-label">다운로드 버튼 공개</label>
+                <p style="font-size: 0.85rem; color: var(--text-mid); margin-bottom: 10px;">
+                    활성화하면 로그인하지 않은 사용자도 폴더 다운로드 버튼을 볼 수 있습니다.
+                </p>
+                <div class="align-btn-group">
+                    <button type="button" class="align-btn" id="downloadOff" onclick="setDownloadEnabled(false)">OFF</button>
+                    <button type="button" class="align-btn" id="downloadOn" onclick="setDownloadEnabled(true)">ON</button>
+                </div>
+            </div>
+            <p style="text-align: center; color: var(--text-mid); margin: 20px 0;">
                 비밀번호 변경은 Firebase Console에서 가능합니다.
             </p>
             <button class="form-btn secondary" onclick="closeModal('settingsModal')">닫기</button>
@@ -2024,6 +2078,8 @@
         let editThumbnailRemoved = false;
         let currentFilter = 'all';
         let draggedItem = null;
+        let downloadEnabled = false; // 다운로드 버튼 표시 여부
+        let serviceWorkerRegistration = null; // Service Worker 등록 객체
 
         // 자기소개 스타일
         let currentIntroAlign = 'left';
@@ -2554,6 +2610,83 @@
             }
         }
 
+        // 폴더 다운로드 (카드 버튼용)
+        async function downloadFolder(itemId) {
+            try {
+                const item = itemsCache[itemId] || (await database.ref('metadata/' + itemId).once('value')).val();
+                if (!item || item.fileType !== 'folder') {
+                    alert('폴더를 찾을 수 없습니다.');
+                    return;
+                }
+
+                const fileData = await getFile(item.fileId);
+                if (!fileData) {
+                    alert('폴더 데이터를 찾을 수 없습니다.');
+                    return;
+                }
+
+                await downloadFolderAsZip(fileData, item.fileName || item.title);
+            } catch (error) {
+                console.error('폴더 다운로드 오류:', error);
+                alert('폴더 다운로드 중 오류가 발생했습니다.');
+            }
+        }
+
+        // Unity WebGL 실행
+        async function runWebGL(itemId) {
+            try {
+                // Service Worker 등록 확인
+                if (!serviceWorkerRegistration) {
+                    await registerServiceWorker();
+                }
+
+                // 항목 정보 가져오기
+                const item = itemsCache[itemId] || (await database.ref('metadata/' + itemId).once('value')).val();
+                if (!item || !item.isWebGL) {
+                    alert('WebGL 프로젝트를 찾을 수 없습니다.');
+                    return;
+                }
+
+                // 새 탭에서 가상 URL 열기
+                const virtualUrl = `/virtual/${item.fileId}/`;
+                window.open(virtualUrl, '_blank');
+
+            } catch (error) {
+                console.error('WebGL 실행 오류:', error);
+                alert('WebGL 실행 중 오류가 발생했습니다.\n\n' + error.message);
+            }
+        }
+
+        // Service Worker 등록
+        async function registerServiceWorker() {
+            try {
+                if (!('serviceWorker' in navigator)) {
+                    throw new Error('이 브라우저는 Service Worker를 지원하지 않습니다.');
+                }
+
+                const registration = await navigator.serviceWorker.register('/sw.js');
+                serviceWorkerRegistration = registration;
+
+                console.log('Service Worker 등록 완료:', registration);
+
+                // Service Worker가 활성화될 때까지 대기
+                await navigator.serviceWorker.ready;
+
+                // Firebase DB URL 전송
+                const dbUrl = firebaseConfig.databaseURL;
+                registration.active.postMessage({
+                    type: 'INIT_FIREBASE',
+                    dbUrl: dbUrl
+                });
+
+                console.log('Service Worker 초기화 완료');
+
+            } catch (error) {
+                console.error('Service Worker 등록 실패:', error);
+                throw error;
+            }
+        }
+
         // ============ 렌더링 ============
         async function renderSectionsAndNav() {
             const sections = await getSections();
@@ -2681,9 +2814,28 @@
 
         function createCardHTML(item, category) {
             const fileTypeIcon = getFileTypeIcon(item.fileType);
-            const thumbnailHTML = item.thumbnail 
+            const thumbnailHTML = item.thumbnail
                 ? `<img src="data:image/jpeg;base64,${item.thumbnail}" alt="${item.title}">`
                 : `<div class="card-thumbnail-placeholder">${fileTypeIcon}</div>`;
+
+            // WebGL 실행 버튼 및 다운로드 버튼
+            let actionButtons = '';
+            if (item.fileType === 'folder' && item.isWebGL) {
+                actionButtons = `
+                    <div class="card-actions">
+                        <button class="card-action-btn primary" onclick="event.stopPropagation(); runWebGL('${item.id}')" title="실행">▶ 실행</button>
+                        ${downloadEnabled || isLoggedIn ? `<button class="card-action-btn secondary" onclick="event.stopPropagation(); downloadFolder('${item.id}')" title="다운로드">⬇ ZIP</button>` : ''}
+                    </div>
+                `;
+            } else if (item.fileType === 'folder') {
+                if (downloadEnabled || isLoggedIn) {
+                    actionButtons = `
+                        <div class="card-actions">
+                            <button class="card-action-btn secondary" onclick="event.stopPropagation(); downloadFolder('${item.id}')" title="다운로드">⬇ ZIP</button>
+                        </div>
+                    `;
+                }
+            }
 
             return `
                 <div class="portfolio-card" data-item-id="${item.id}" data-category="${category}">
@@ -2692,7 +2844,7 @@
                     <div class="card-link" onclick="openItemById('${item.id}')">
                         <div class="card-thumbnail">
                             ${thumbnailHTML}
-                            <span class="card-file-type">${(item.fileType || 'LINK').toUpperCase()}</span>
+                            <span class="card-file-type">${item.isWebGL ? 'WEBGL' : (item.fileType || 'LINK').toUpperCase()}</span>
                         </div>
                         <div class="card-body">
                             <div class="card-info">
@@ -2705,6 +2857,7 @@
                                     </div>
                                 ` : ''}
                             </div>
+                            ${actionButtons}
                         </div>
                     </div>
                 </div>
@@ -3137,6 +3290,40 @@
             }
         }
 
+        // ============ 다운로드 설정 ============
+        async function loadDownloadSettings() {
+            try {
+                const snapshot = await database.ref('settings/downloadEnabled').once('value');
+                const enabled = snapshot.val();
+                downloadEnabled = enabled === true;
+                updateDownloadUI();
+            } catch (error) {
+                console.error('다운로드 설정 로드 오류:', error);
+            }
+        }
+
+        async function setDownloadEnabled(enabled) {
+            try {
+                downloadEnabled = enabled;
+                await database.ref('settings/downloadEnabled').set(enabled);
+                updateDownloadUI();
+                // 카드 다시 렌더링하여 다운로드 버튼 표시/숨김
+                await renderAllSections();
+            } catch (error) {
+                console.error('다운로드 설정 저장 오류:', error);
+                alert('설정 저장 중 오류가 발생했습니다.');
+            }
+        }
+
+        function updateDownloadUI() {
+            const downloadOff = document.getElementById('downloadOff');
+            const downloadOn = document.getElementById('downloadOn');
+            if (downloadOff && downloadOn) {
+                downloadOff.classList.toggle('active', !downloadEnabled);
+                downloadOn.classList.toggle('active', downloadEnabled);
+            }
+        }
+
         // ============ 연락처 수정/추가 ============
         let editingContactIndex = -1;
 
@@ -3407,15 +3594,24 @@
             const folderPath = files[0].webkitRelativePath;
             const folderName = folderPath.split('/')[0];
 
+            // index.html 파일이 있는지 확인 (Unity WebGL 빌드 감지)
+            const hasIndexHtml = files.some(f =>
+                f.name === 'index.html' || f.webkitRelativePath.endsWith('/index.html')
+            );
+
             selectedFolder = {
                 name: folderName,
                 files: files,
-                totalSize: totalSize
+                totalSize: totalSize,
+                isWebGL: hasIndexHtml
             };
             selectedFile = null; // 폴더 선택 시 단일 파일 초기화
 
-            document.getElementById('filePreviewIcon').textContent = '📁';
-            document.getElementById('filePreviewName').textContent = `${folderName} (${files.length}개 파일)`;
+            const icon = hasIndexHtml ? '🎮' : '📁';
+            const typeLabel = hasIndexHtml ? 'Unity WebGL' : '폴더';
+
+            document.getElementById('filePreviewIcon').textContent = icon;
+            document.getElementById('filePreviewName').textContent = `${folderName} (${files.length}개 파일 - ${typeLabel})`;
             document.getElementById('filePreviewSize').textContent = formatFileSize(totalSize);
             document.getElementById('filePreview').classList.add('show');
         }
@@ -3656,7 +3852,7 @@
                     title,
                     description,
                     date,
-                    link: selectedFile ? null : link,
+                    link: (selectedFile || selectedFolder) ? null : link,
                     fileId,
                     fileType,
                     mimeType,
@@ -3664,7 +3860,8 @@
                     thumbnail: selectedThumbnail,
                     tags: currentTags,
                     order: items.length,
-                    createdAt: Date.now()
+                    createdAt: Date.now(),
+                    isWebGL: selectedFolder ? selectedFolder.isWebGL : false
                 };
 
                 console.log('메타데이터 저장:', item);
@@ -4309,8 +4506,15 @@
                 console.log('포트폴리오 초기화 시작...');
                 checkSession();
 
+                // Service Worker 등록 (백그라운드)
+                registerServiceWorker().catch(err => {
+                    console.warn('Service Worker 등록 실패 (WebGL 실행 불가):', err);
+                });
+
                 await loadSiteTitle();
                 console.log('사이트 타이틀 로드 완료');
+                await loadDownloadSettings();
+                console.log('다운로드 설정 로드 완료');
                 await loadProfile();
                 console.log('프로필 로드 완료');
                 await loadIntro();
