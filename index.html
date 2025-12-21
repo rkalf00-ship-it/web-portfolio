@@ -1858,13 +1858,18 @@
             <h2 class="modal-title" id="addModalTitle">📄 새 항목 추가</h2>
             <input type="hidden" id="addCategory">
             <div class="form-group">
-                <label class="form-label">파일 업로드 (최대 20MB)</label>
-                <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('fileInput').click()">
+                <label class="form-label">파일 또는 폴더 업로드</label>
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <button type="button" class="form-btn secondary" style="flex: 1;" onclick="document.getElementById('fileInput').click()">📄 파일 선택</button>
+                    <button type="button" class="form-btn secondary" style="flex: 1;" onclick="document.getElementById('folderInput').click()">📁 폴더 선택</button>
+                </div>
+                <div class="file-upload-area" id="fileUploadArea">
                     <div class="file-upload-icon">📁</div>
-                    <div class="file-upload-text">클릭하거나 파일을 드래그하세요</div>
-                    <div class="file-upload-hint">PDF, HTML, PNG, JPG, GIF, MP4 등</div>
+                    <div class="file-upload-text">파일 또는 폴더를 선택하세요</div>
+                    <div class="file-upload-hint">파일: 최대 20MB / 폴더: 전체 구조 유지</div>
                 </div>
                 <input type="file" id="fileInput" style="display: none;" accept="*/*" onchange="handleFileSelect(event)">
+                <input type="file" id="folderInput" style="display: none;" webkitdirectory directory multiple onchange="handleFolderSelect(event)">
                 <div class="file-preview" id="filePreview">
                     <span class="file-preview-icon" id="filePreviewIcon">📄</span>
                     <div class="file-preview-info">
@@ -1983,6 +1988,9 @@
     <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+    <!-- JSZip for folder download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     
     <script>
         // ============ Firebase 설정 ============
@@ -2009,6 +2017,7 @@
         let currentTags = [];
         let editTags = [];
         let selectedFile = null;
+        let selectedFolder = null; // 폴더 업로드용
         let selectedThumbnail = null;
         let editThumbnail = null;
         let editThumbnailChanged = false;
@@ -2378,43 +2387,51 @@
             console.log('item.link:', item.link, '(타입:', typeof item.link, ')');
             console.log('item.fileType:', item.fileType);
             console.log('전체 항목:', JSON.stringify(item, null, 2));
-            
+
             addToHistory(item);
 
-            // 1. 파일 ID가 있는 경우 - 업로드된 파일
+            // 1. 파일 ID가 있는 경우 - 업로드된 파일 또는 폴더
             // fileId가 존재하고, 빈 문자열이 아니고, null/undefined가 아닌 경우
             if (item.fileId && item.fileId !== '' && item.fileId !== 'null' && item.fileId !== 'undefined') {
                 console.log('1. 파일 ID 존재:', item.fileId);
-                
+
                 try {
                     const fileData = await getFile(item.fileId);
-                    
+
                     if (fileData && fileData.length > 0) {
                         console.log('2. 파일 데이터 조회 성공, 길이:', fileData.length);
-                        
+
+                        // 폴더 타입인 경우 ZIP으로 다운로드
+                        if (item.fileType === 'folder') {
+                            console.log('3. 폴더 타입 - ZIP 생성 시작');
+                            await downloadFolderAsZip(fileData, item.fileName || item.title);
+                            console.log('4. ZIP 다운로드 완료');
+                            return;
+                        }
+
                         const mimeType = item.mimeType || getMimeType(item.fileType);
                         console.log('3. MIME 타입:', mimeType);
-                        
+
                         const blob = base64ToBlob(fileData, mimeType);
                         const url = URL.createObjectURL(blob);
                         console.log('4. Blob URL 생성 완료');
-                        
+
                         // a 태그를 사용하여 파일 열기
                         const link = document.createElement('a');
                         link.href = url;
                         link.target = '_blank';
                         link.rel = 'noopener noreferrer';
-                        
+
                         // 일부 파일 형식은 다운로드로 처리
                         const downloadTypes = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip'];
                         if (downloadTypes.includes(item.fileType?.toLowerCase())) {
                             link.download = item.fileName || item.title + '.' + item.fileType;
                         }
-                        
+
                         document.body.appendChild(link);
                         link.click();
                         document.body.removeChild(link);
-                        
+
                         setTimeout(() => URL.revokeObjectURL(url), 1000);
                         console.log('5. 파일 열기 완료');
                         return;
@@ -2487,7 +2504,7 @@
                 if (base64.includes(',')) {
                     pureBase64 = base64.split(',')[1];
                 }
-                
+
                 const byteCharacters = atob(pureBase64);
                 const byteNumbers = new Array(byteCharacters.length);
                 for (let i = 0; i < byteCharacters.length; i++) {
@@ -2498,6 +2515,42 @@
             } catch (error) {
                 console.error('base64ToBlob 오류:', error);
                 throw error;
+            }
+        }
+
+        // 폴더를 ZIP 파일로 다운로드
+        async function downloadFolderAsZip(folderDataString, folderName) {
+            try {
+                const folderData = JSON.parse(folderDataString);
+                const zip = new JSZip();
+
+                // 모든 파일을 ZIP에 추가
+                for (const file of folderData.files) {
+                    // Base64를 Blob으로 변환
+                    const blob = base64ToBlob(file.data, file.type);
+                    // ZIP에 파일 추가 (원본 경로 구조 유지)
+                    zip.file(file.path, blob);
+                }
+
+                // ZIP 파일 생성
+                const zipBlob = await zip.generateAsync({
+                    type: 'blob',
+                    compression: 'DEFLATE',
+                    compressionOptions: { level: 6 }
+                });
+
+                // ZIP 파일 다운로드
+                const url = URL.createObjectURL(zipBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `${folderName}.zip`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+            } catch (error) {
+                console.error('ZIP 생성 오류:', error);
+                alert('폴더를 다운로드하는 중 오류가 발생했습니다.\n\n오류: ' + error.message);
             }
         }
 
@@ -2708,7 +2761,8 @@
                 'jpeg': '🖼️',
                 'gif': '🎞️',
                 'mp4': '🎬',
-                'link': '🔗'
+                'link': '🔗',
+                'folder': '📁'
             };
             return icons[fileType?.toLowerCase()] || '📄';
         }
@@ -3342,6 +3396,30 @@
             if (file) handleFile(file);
         }
 
+        async function handleFolderSelect(event) {
+            const files = Array.from(event.target.files);
+            if (files.length === 0) return;
+
+            // 전체 폴더 크기 계산
+            const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+
+            // 폴더 이름 추출 (첫 번째 파일의 경로에서)
+            const folderPath = files[0].webkitRelativePath;
+            const folderName = folderPath.split('/')[0];
+
+            selectedFolder = {
+                name: folderName,
+                files: files,
+                totalSize: totalSize
+            };
+            selectedFile = null; // 폴더 선택 시 단일 파일 초기화
+
+            document.getElementById('filePreviewIcon').textContent = '📁';
+            document.getElementById('filePreviewName').textContent = `${folderName} (${files.length}개 파일)`;
+            document.getElementById('filePreviewSize').textContent = formatFileSize(totalSize);
+            document.getElementById('filePreview').classList.add('show');
+        }
+
         function handleFile(file) {
             if (file.size > MAX_FILE_SIZE) {
                 alert('파일 크기는 20MB 이하여야 합니다.');
@@ -3349,8 +3427,9 @@
             }
 
             selectedFile = file;
+            selectedFolder = null; // 파일 선택 시 폴더 초기화
             const ext = file.name.split('.').pop().toLowerCase();
-            
+
             document.getElementById('filePreviewIcon').textContent = getFileTypeIcon(ext);
             document.getElementById('filePreviewName').textContent = file.name;
             document.getElementById('filePreviewSize').textContent = formatFileSize(file.size);
@@ -3359,7 +3438,9 @@
 
         function removeFile() {
             selectedFile = null;
+            selectedFolder = null;
             document.getElementById('fileInput').value = '';
+            document.getElementById('folderInput').value = '';
             document.getElementById('filePreview').classList.remove('show');
         }
 
@@ -3475,7 +3556,7 @@
             const link = document.getElementById('itemLink').value.trim();
             const errorEl = document.getElementById('addError');
 
-            console.log('항목 저장 시도:', { category, title, selectedFile: selectedFile ? selectedFile.name : null, link });
+            console.log('항목 저장 시도:', { category, title, selectedFile: selectedFile ? selectedFile.name : null, selectedFolder: selectedFolder ? selectedFolder.name : null, link });
 
             if (!title) {
                 errorEl.textContent = '제목을 입력해주세요.';
@@ -3483,8 +3564,8 @@
                 return;
             }
 
-            if (!selectedFile && !link) {
-                errorEl.textContent = '파일을 업로드하거나 링크를 입력해주세요.';
+            if (!selectedFile && !selectedFolder && !link) {
+                errorEl.textContent = '파일, 폴더를 업로드하거나 링크를 입력해주세요.';
                 errorEl.classList.add('show');
                 return;
             }
@@ -3499,11 +3580,54 @@
                 let fileType = 'link';
                 let mimeType = null;
                 let fileName = null;
+                let folderData = null;
 
-                if (selectedFile) {
+                // 폴더 업로드 처리
+                if (selectedFolder) {
+                    console.log('폴더 업로드 시작:', selectedFolder.name);
+                    document.getElementById('uploadProgress').classList.add('show');
+
+                    fileId = itemId;
+                    fileType = 'folder';
+                    fileName = selectedFolder.name;
+
+                    // 폴더 내 모든 파일을 Base64로 변환
+                    folderData = {
+                        name: selectedFolder.name,
+                        files: []
+                    };
+
+                    const totalFiles = selectedFolder.files.length;
+                    for (let i = 0; i < totalFiles; i++) {
+                        const file = selectedFolder.files[i];
+                        const base64 = await fileToBase64(file);
+
+                        folderData.files.push({
+                            path: file.webkitRelativePath,
+                            name: file.name,
+                            type: file.type,
+                            size: file.size,
+                            data: base64
+                        });
+
+                        // 진행률 업데이트
+                        const progress = Math.round(((i + 1) / totalFiles) * 100);
+                        document.getElementById('progressFill').style.width = progress + '%';
+                        document.getElementById('progressText').textContent = `업로드 중... ${progress}% (${i + 1}/${totalFiles})`;
+                    }
+
+                    // 폴더 데이터를 JSON으로 저장
+                    await saveFile(fileId, JSON.stringify(folderData));
+                    console.log('폴더 저장 완료');
+
+                    document.getElementById('progressFill').style.width = '100%';
+                    document.getElementById('progressText').textContent = '업로드 완료!';
+                }
+                // 단일 파일 업로드 처리
+                else if (selectedFile) {
                     console.log('파일 업로드 시작:', selectedFile.name);
                     document.getElementById('uploadProgress').classList.add('show');
-                    
+
                     fileId = itemId;
                     fileType = selectedFile.name.split('.').pop().toLowerCase();
                     mimeType = selectedFile.type;
@@ -3513,7 +3637,7 @@
                     console.log('Base64 변환 완료, 길이:', base64.length);
                     await saveFile(fileId, base64);
                     console.log('파일 저장 완료');
-                    
+
                     document.getElementById('progressFill').style.width = '100%';
                     document.getElementById('progressText').textContent = '업로드 완료!';
                 }
