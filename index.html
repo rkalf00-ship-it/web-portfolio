@@ -2789,10 +2789,9 @@
                 await navigator.serviceWorker.ready;
 
                 // Firebase Storage URL 전송
-                const storageUrl = `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.apiKey.split(':')[0]}-default-appspot.com`;
                 registration.active.postMessage({
                     type: 'INIT_STORAGE',
-                    storageUrl: 'https://firebasestorage.googleapis.com/v0/b/web-portfolio-e7e05.appspot.com'
+                    storageUrl: 'https://firebasestorage.googleapis.com/v0/b/web-portfolio-e7e05.firebasestorage.app'
                 });
 
                 console.log('Service Worker 초기화 완료');
