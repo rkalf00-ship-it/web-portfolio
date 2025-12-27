@@ -2339,30 +2339,46 @@
             }
         }
 
-        // Storage에서 폴더의 모든 파일 목록 가져오기
+        // Storage에서 폴더의 모든 파일 목록 가져오기 (재귀적)
         async function getFolderFiles(folderId) {
             try {
                 console.log('폴더 파일 목록 조회:', folderId);
                 const folderRef = storage.ref('folders/' + folderId);
-                const result = await folderRef.listAll();
 
-                const files = await Promise.all(
-                    result.items.map(async (itemRef) => {
-                        const url = await itemRef.getDownloadURL();
-                        const metadata = await itemRef.getMetadata();
+                // 재귀적으로 모든 파일 가져오기
+                const allFiles = [];
 
-                        return {
-                            path: itemRef.fullPath.replace(`folders/${folderId}/`, ''),
-                            name: itemRef.name,
-                            type: metadata.contentType,
-                            size: metadata.size,
-                            url: url
-                        };
-                    })
-                );
+                async function listAllFiles(ref) {
+                    const result = await ref.listAll();
 
-                console.log('폴더 파일 목록 조회 완료:', files.length, '개');
-                return files;
+                    // 현재 레벨의 파일들 처리
+                    for (const itemRef of result.items) {
+                        try {
+                            const url = await itemRef.getDownloadURL();
+                            const metadata = await itemRef.getMetadata();
+
+                            allFiles.push({
+                                path: itemRef.fullPath.replace(`folders/${folderId}/`, ''),
+                                name: itemRef.name,
+                                type: metadata.contentType,
+                                size: metadata.size,
+                                url: url
+                            });
+                        } catch (error) {
+                            console.warn('파일 정보 가져오기 실패:', itemRef.fullPath, error);
+                        }
+                    }
+
+                    // 하위 폴더들 재귀적으로 처리
+                    for (const prefixRef of result.prefixes) {
+                        await listAllFiles(prefixRef);
+                    }
+                }
+
+                await listAllFiles(folderRef);
+
+                console.log('폴더 파일 목록 조회 완료:', allFiles.length, '개');
+                return allFiles;
             } catch (error) {
                 console.error('getFolderFiles error:', error);
                 return [];
