@@ -5,7 +5,8 @@
       "Bash(git add:*)",
       "Bash(git commit -m \"$(cat <<''EOF''\nFirebase Storage 버킷 주소 수정 및 업로드 기능 개선\n\n- storageBucket 주소를 새 형식으로 변경 (.appspot.com -> .firebasestorage.app)\n- 폴더 업로드 크기 제한 검증 추가 (500MB)\n- 파일 크기 에러 메시지 개선\n- CORS 오류 해결\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(git push)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nService Worker Storage URL 수정\n\n- Service Worker에 전달하는 Storage URL을 새 형식으로 변경\n- .appspot.com -> .firebasestorage.app\n- Unity WebGL 파일 로딩 오류 해결\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(git commit -m \"$(cat <<''EOF''\nService Worker Storage URL 수정\n\n- Service Worker에 전달하는 Storage URL을 새 형식으로 변경\n- .appspot.com -> .firebasestorage.app\n- Unity WebGL 파일 로딩 오류 해결\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git commit:*)"
     ]
   }
 }
