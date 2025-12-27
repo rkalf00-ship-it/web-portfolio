@@ -39,36 +39,43 @@ async function handleVirtualRequest(url, request) {
 
         // Construct Firebase Storage URL
         let storageFilePath;
+        let response;
+        let fileUrl;
+
         if (!filePath || filePath === '') {
-            // Default to index.html for root path
-            storageFilePath = `folders/${itemId}/index.html`;
-        } else {
-            // Try to find the file with the exact path
-            storageFilePath = `folders/${itemId}/${filePath}`;
-        }
-
-        // First try: exact path
-        let fileUrl = `${storageBaseUrl}/o/${encodeURIComponent(storageFilePath)}?alt=media`;
-
-        console.log('SW: Trying file URL:', fileUrl);
-
-        let response = await fetch(fileUrl);
-
-        // If not found, try with folder name prefix (Unity builds often have this structure)
-        if (!response.ok && !filePath.includes('/')) {
-            // Try finding index.html in subfolders
+            // Root path - try to find index.html in various locations
             const possiblePaths = [
-                `folders/${itemId}/${filePath}/index.html`,
-                `folders/${itemId}/${filePath}`,
+                `folders/${itemId}/index.html`,           // Direct: folders/item_xxx/index.html
+                `folders/${itemId}/Start-build/index.html`, // Unity build folder pattern
+                `folders/${itemId}/Build/index.html`,     // Alternative Unity pattern
             ];
+
+            console.log('SW: Looking for index.html in possible locations');
 
             for (const path of possiblePaths) {
                 fileUrl = `${storageBaseUrl}/o/${encodeURIComponent(path)}?alt=media`;
+                console.log('SW: Trying:', path);
                 response = await fetch(fileUrl);
                 if (response.ok) {
-                    console.log('SW: Found file at:', path);
+                    console.log('SW: Found index.html at:', path);
+                    storageFilePath = path;
                     break;
                 }
+            }
+        } else {
+            // Specific file path
+            // Try direct path first
+            storageFilePath = `folders/${itemId}/${filePath}`;
+            fileUrl = `${storageBaseUrl}/o/${encodeURIComponent(storageFilePath)}?alt=media`;
+            console.log('SW: Trying file URL:', fileUrl);
+            response = await fetch(fileUrl);
+
+            // If not found, try with Start-build prefix
+            if (!response.ok) {
+                storageFilePath = `folders/${itemId}/Start-build/${filePath}`;
+                fileUrl = `${storageBaseUrl}/o/${encodeURIComponent(storageFilePath)}?alt=media`;
+                console.log('SW: Trying with Start-build prefix:', fileUrl);
+                response = await fetch(fileUrl);
             }
         }
 
