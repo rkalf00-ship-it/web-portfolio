@@ -1682,6 +1682,22 @@
         </div>
     </div>
 
+    <!-- CSV 뷰어 모달 -->
+    <div class="modal-overlay" id="csvModal">
+        <div class="modal" style="max-width: 1200px; width: 95%;">
+            <h2 class="modal-title" id="csvModalTitle">📊 CSV 파일 뷰어</h2>
+            <div style="overflow-x: auto; max-height: 600px; margin: 20px 0;">
+                <table id="csvTable" style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                    <!-- CSV 데이터가 여기에 표시됩니다 -->
+                </table>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="form-btn secondary" onclick="downloadCSV()">다운로드</button>
+                <button class="form-btn secondary" onclick="closeModal('csvModal')">닫기</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 프로필 수정 모달 -->
     <div class="modal-overlay" id="profileModal">
         <div class="modal">
@@ -2571,6 +2587,12 @@
                     if (fileUrl) {
                         console.log('2. 파일 URL 조회 성공:', fileUrl);
 
+                        // CSV 파일은 뷰어로 표시
+                        if (item.fileType?.toLowerCase() === 'csv') {
+                            await openCSVViewer(fileUrl, item.title);
+                            return;
+                        }
+
                         // a 태그를 사용하여 파일 열기
                         const link = document.createElement('a');
                         link.href = fileUrl;
@@ -2816,6 +2838,103 @@
                 console.error('Service Worker 등록 실패:', error);
                 throw error;
             }
+        }
+
+        // ============ CSV 뷰어 ============
+        let currentCSVUrl = '';
+        let currentCSVTitle = '';
+
+        async function openCSVViewer(fileUrl, title) {
+            try {
+                currentCSVUrl = fileUrl;
+                currentCSVTitle = title;
+
+                // CSV 파일 다운로드
+                const response = await fetch(fileUrl);
+                const csvText = await response.text();
+
+                // CSV 파싱 및 테이블 생성
+                parseAndDisplayCSV(csvText);
+
+                // 모달 제목 설정
+                document.getElementById('csvModalTitle').textContent = `📊 ${title}`;
+
+                // 모달 열기
+                openModal('csvModal');
+            } catch (error) {
+                console.error('CSV 파일 열기 오류:', error);
+                alert('CSV 파일을 여는 중 오류가 발생했습니다.\n\n' + error.message);
+            }
+        }
+
+        function parseAndDisplayCSV(csvText) {
+            // CSV 파싱 (간단한 구현)
+            const lines = csvText.split('\n').filter(line => line.trim());
+            const table = document.getElementById('csvTable');
+
+            if (lines.length === 0) {
+                table.innerHTML = '<tr><td style="padding: 20px; text-align: center;">데이터가 없습니다.</td></tr>';
+                return;
+            }
+
+            // 테이블 HTML 생성
+            let html = '';
+
+            lines.forEach((line, index) => {
+                const cells = parseCSVLine(line);
+                const tag = index === 0 ? 'th' : 'td';
+                const style = index === 0
+                    ? 'background: var(--pastel-gold-light); padding: 12px; border: 1px solid var(--border-light); font-weight: 600; text-align: left;'
+                    : 'padding: 10px; border: 1px solid var(--border-light);';
+
+                html += '<tr>';
+                cells.forEach(cell => {
+                    html += `<${tag} style="${style}">${escapeHtml(cell)}</${tag}>`;
+                });
+                html += '</tr>';
+            });
+
+            table.innerHTML = html;
+        }
+
+        function parseCSVLine(line) {
+            // 간단한 CSV 파서 (쉼표로 구분, 따옴표 처리)
+            const cells = [];
+            let current = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    cells.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+
+            cells.push(current.trim());
+            return cells;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function downloadCSV() {
+            if (!currentCSVUrl) return;
+
+            const link = document.createElement('a');
+            link.href = currentCSVUrl;
+            link.download = currentCSVTitle + '.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         // ============ 렌더링 ============
