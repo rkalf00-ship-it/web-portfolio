@@ -1721,6 +1721,13 @@
                 </div>
             </div>
             <div class="form-group">
+                <label class="form-label">프로필 이미지 모양</label>
+                <div class="align-btn-group">
+                    <button type="button" class="align-btn active" id="shapeSquare" onclick="setProfileImageShape('square')">⬜ 사각형</button>
+                    <button type="button" class="align-btn" id="shapeCircle" onclick="setProfileImageShape('circle')">⚫ 원형</button>
+                </div>
+            </div>
+            <div class="form-group">
                 <label class="form-label">메인 타이틀</label>
                 <input type="text" class="form-input" id="profileTitle" placeholder="PORTFOLIO">
             </div>
@@ -2106,6 +2113,7 @@
         let downloadEnabled = false; // 다운로드 버튼 표시 여부
         let serviceWorkerRegistration = null; // Service Worker 등록 객체
         let profileImageSize = 150; // 프로필 이미지 크기 (px)
+        let profileImageShape = 'square'; // 프로필 이미지 모양 (square/circle)
 
         // 자기소개 스타일
         let currentIntroAlign = 'left';
@@ -3666,6 +3674,58 @@
             }
         }
 
+        // ============ 프로필 이미지 모양 설정 ============
+        async function setProfileImageShape(shape) {
+            try {
+                profileImageShape = shape;
+
+                // 버튼 활성화 상태 업데이트
+                const squareBtn = document.getElementById('shapeSquare');
+                const circleBtn = document.getElementById('shapeCircle');
+                if (squareBtn && circleBtn) {
+                    squareBtn.classList.toggle('active', shape === 'square');
+                    circleBtn.classList.toggle('active', shape === 'circle');
+                }
+
+                // 프로필 이미지 컨테이너에 모양 적용
+                const profileImageContainer = document.getElementById('profileImage');
+                if (profileImageContainer) {
+                    profileImageContainer.style.borderRadius = shape === 'circle' ? '50%' : '0';
+                }
+
+                // Firebase에 저장
+                await database.ref('settings/profileImageShape').set(shape);
+            } catch (error) {
+                console.error('프로필 이미지 모양 저장 오류:', error);
+            }
+        }
+
+        async function loadProfileImageShape() {
+            try {
+                const snapshot = await database.ref('settings/profileImageShape').once('value');
+                const shape = snapshot.val();
+                if (shape !== null) {
+                    profileImageShape = shape;
+
+                    // 버튼 활성화 상태 업데이트
+                    const squareBtn = document.getElementById('shapeSquare');
+                    const circleBtn = document.getElementById('shapeCircle');
+                    if (squareBtn && circleBtn) {
+                        squareBtn.classList.toggle('active', shape === 'square');
+                        circleBtn.classList.toggle('active', shape === 'circle');
+                    }
+
+                    // 프로필 이미지 컨테이너에 모양 적용
+                    const profileImageContainer = document.getElementById('profileImage');
+                    if (profileImageContainer) {
+                        profileImageContainer.style.borderRadius = shape === 'circle' ? '50%' : '0';
+                    }
+                }
+            } catch (error) {
+                console.error('프로필 이미지 모양 로드 오류:', error);
+            }
+        }
+
         // ============ 연락처 수정/추가 ============
         let editingContactIndex = -1;
 
@@ -4869,6 +4929,8 @@
                 console.log('다운로드 설정 로드 완료');
                 await loadProfileImageSize();
                 console.log('프로필 이미지 크기 로드 완료');
+                await loadProfileImageShape();
+                console.log('프로필 이미지 모양 로드 완료');
                 await loadProfile();
                 console.log('프로필 로드 완료');
                 await loadIntro();
