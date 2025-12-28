@@ -3636,8 +3636,8 @@
                 // 프로필 이미지 컨테이너 크기 적용
                 const profileImageContainer = document.getElementById('profileImage');
                 if (profileImageContainer) {
-                    profileImageContainer.style.width = size + 'px';
-                    profileImageContainer.style.height = size + 'px';
+                    profileImageContainer.style.setProperty('width', size + 'px', 'important');
+                    profileImageContainer.style.setProperty('height', size + 'px', 'important');
                 }
 
                 // Firebase에 저장
@@ -3665,8 +3665,8 @@
                     // 프로필 이미지 컨테이너 크기 적용
                     const profileImageContainer = document.getElementById('profileImage');
                     if (profileImageContainer) {
-                        profileImageContainer.style.width = size + 'px';
-                        profileImageContainer.style.height = size + 'px';
+                        profileImageContainer.style.setProperty('width', size + 'px', 'important');
+                        profileImageContainer.style.setProperty('height', size + 'px', 'important');
                     }
                 }
             } catch (error) {
