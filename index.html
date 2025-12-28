@@ -154,8 +154,12 @@
         }
 
         .profile-image-container {
-            width: 140px;
-            height: 140px;
+            width: 150px;
+            height: 150px;
+            min-width: 150px;
+            min-height: 150px;
+            max-width: 300px;
+            max-height: 300px;
             margin: 0 auto;
             border-radius: 50%;
             overflow: hidden;
@@ -164,6 +168,7 @@
             box-shadow: 0 4px 15px var(--shadow-mid);
             position: relative;
             cursor: default;
+            flex-shrink: 0;
         }
 
         .profile-image-container.editable {
