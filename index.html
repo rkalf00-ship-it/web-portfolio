@@ -2868,11 +2868,11 @@
         }
 
         function parseAndDisplayCSV(csvText) {
-            // CSV 파싱 (간단한 구현)
-            const lines = csvText.split('\n').filter(line => line.trim());
+            // CSV 파싱 (RFC 4180 호환)
+            const rows = parseCSV(csvText);
             const table = document.getElementById('csvTable');
 
-            if (lines.length === 0) {
+            if (rows.length === 0) {
                 table.innerHTML = '<tr><td style="padding: 20px; text-align: center;">데이터가 없습니다.</td></tr>';
                 return;
             }
@@ -2880,8 +2880,7 @@
             // 테이블 HTML 생성
             let html = '';
 
-            lines.forEach((line, index) => {
-                const cells = parseCSVLine(line);
+            rows.forEach((cells, index) => {
                 const tag = index === 0 ? 'th' : 'td';
                 const style = index === 0
                     ? 'background: var(--pastel-gold-light); padding: 12px 16px; border: 1px solid var(--border-light); font-weight: 600; text-align: left; white-space: nowrap; min-width: 120px;'
@@ -2889,7 +2888,7 @@
 
                 html += '<tr>';
                 cells.forEach(cell => {
-                    // 셀 내부의 줄바꿈을 공백으로 변환 (헤더가 세로로 보이는 문제 해결)
+                    // 셀 내부의 줄바꿈을 공백으로 변환
                     const cleanedCell = cell.replace(/\r?\n/g, ' ').trim();
                     html += `<${tag} style="${style}">${escapeHtml(cleanedCell)}</${tag}>`;
                 });
@@ -2899,27 +2898,70 @@
             table.innerHTML = html;
         }
 
-        function parseCSVLine(line) {
-            // 간단한 CSV 파서 (쉼표로 구분, 따옴표 처리)
-            const cells = [];
-            let current = '';
+        function parseCSV(text) {
+            // RFC 4180 호환 CSV 파서
+            const rows = [];
+            let currentRow = [];
+            let currentCell = '';
             let inQuotes = false;
 
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                const nextChar = text[i + 1];
 
-                if (char === '"') {
-                    inQuotes = !inQuotes;
-                } else if (char === ',' && !inQuotes) {
-                    cells.push(current.trim());
-                    current = '';
+                if (inQuotes) {
+                    if (char === '"') {
+                        if (nextChar === '"') {
+                            // 이스케이프된 따옴표 ("")
+                            currentCell += '"';
+                            i++; // 다음 따옴표 건너뛰기
+                        } else {
+                            // 따옴표 종료
+                            inQuotes = false;
+                        }
+                    } else {
+                        currentCell += char;
+                    }
                 } else {
-                    current += char;
+                    if (char === '"') {
+                        // 따옴표 시작
+                        inQuotes = true;
+                    } else if (char === ',') {
+                        // 셀 구분
+                        currentRow.push(currentCell);
+                        currentCell = '';
+                    } else if (char === '\n' || (char === '\r' && nextChar === '\n')) {
+                        // 행 구분
+                        if (char === '\r') i++; // \r\n인 경우 \n 건너뛰기
+                        currentRow.push(currentCell);
+                        if (currentRow.some(cell => cell.trim() !== '')) {
+                            rows.push(currentRow);
+                        }
+                        currentRow = [];
+                        currentCell = '';
+                    } else if (char === '\r') {
+                        // Mac 스타일 줄바꿈
+                        currentRow.push(currentCell);
+                        if (currentRow.some(cell => cell.trim() !== '')) {
+                            rows.push(currentRow);
+                        }
+                        currentRow = [];
+                        currentCell = '';
+                    } else {
+                        currentCell += char;
+                    }
                 }
             }
 
-            cells.push(current.trim());
-            return cells;
+            // 마지막 셀/행 처리
+            if (currentCell || currentRow.length > 0) {
+                currentRow.push(currentCell);
+                if (currentRow.some(cell => cell.trim() !== '')) {
+                    rows.push(currentRow);
+                }
+            }
+
+            return rows;
         }
 
         function escapeHtml(text) {
