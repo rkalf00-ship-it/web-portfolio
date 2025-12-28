@@ -1702,11 +1702,11 @@
         <div class="modal">
             <h2 class="modal-title">👤 프로필 수정</h2>
             <div class="form-group">
-                <label class="form-label">프로필 이미지 (클릭 또는 Ctrl+V)</label>
+                <label class="form-label">프로필 이미지 (클릭, 드래그 또는 Ctrl+V)</label>
                 <div class="profile-upload-area" id="profileImageUpload" onclick="document.getElementById('profileImageInput').click()" tabindex="0">
                     <div class="thumbnail-placeholder" id="profileImagePlaceholder">
                         <span>🖼️</span>
-                        <span style="font-size: 0.75rem;">이미지 업로드</span>
+                        <span style="font-size: 0.75rem;">클릭, 드래그 또는 Ctrl+V</span>
                     </div>
                     <img class="profile-preview-img" id="profileImagePreview" style="display: none;">
                     <button type="button" class="thumbnail-remove-btn" id="profileImageRemoveBtn" onclick="event.stopPropagation(); removeProfileImage()" style="display: none;">×</button>
@@ -2112,7 +2112,7 @@
 
         const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500MB (단일 파일)
         const MAX_FOLDER_SIZE = 500 * 1024 * 1024; // 500MB (폴더 전체)
-        const MAX_THUMBNAIL_SIZE = 2 * 1024 * 1024; // 2MB
+        const MAX_THUMBNAIL_SIZE = 20 * 1024 * 1024; // 20MB
 
         // 히스토리 (세션 기반 - 페이지 새로고침 시 초기화)
         let viewHistory = [];
@@ -3443,7 +3443,7 @@
             if (!file) return;
 
             if (file.size > MAX_THUMBNAIL_SIZE) {
-                alert('이미지 크기는 2MB 이하여야 합니다.');
+                alert(`이미지 크기는 ${formatFileSize(MAX_THUMBNAIL_SIZE)} 이하여야 합니다.\n현재 크기: ${formatFileSize(file.size)}`);
                 return;
             }
 
@@ -3943,7 +3943,7 @@
 
         function handleThumbnailFile(file) {
             if (file.size > MAX_THUMBNAIL_SIZE) {
-                alert('썸네일 크기는 2MB 이하여야 합니다.');
+                alert(`이미지 크기는 ${formatFileSize(MAX_THUMBNAIL_SIZE)} 이하여야 합니다.\n현재 크기: ${formatFileSize(file.size)}`);
                 return;
             }
 
@@ -4234,7 +4234,7 @@
             if (!file) return;
 
             if (file.size > MAX_THUMBNAIL_SIZE) {
-                alert('썸네일 크기는 2MB 이하여야 합니다.');
+                alert(`이미지 크기는 ${formatFileSize(MAX_THUMBNAIL_SIZE)} 이하여야 합니다.\n현재 크기: ${formatFileSize(file.size)}`);
                 return;
             }
 
@@ -4252,7 +4252,7 @@
 
         function handleEditThumbnailFile(file) {
             if (file.size > MAX_THUMBNAIL_SIZE) {
-                alert('이미지 크기는 2MB 이하여야 합니다.');
+                alert(`이미지 크기는 ${formatFileSize(MAX_THUMBNAIL_SIZE)} 이하여야 합니다.\n현재 크기: ${formatFileSize(file.size)}`);
                 return;
             }
             const reader = new FileReader();
@@ -4724,9 +4724,34 @@
                 }
             });
 
-            // 프로필 이미지 붙여넣기
+            // 프로필 이미지 붙여넣기 및 드래그
             const profileImageUpload = document.getElementById('profileImageUpload');
             profileImageUpload.addEventListener('paste', handleProfileImagePaste);
+
+            // 프로필 이미지 드래그 앤 드롭
+            profileImageUpload.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                profileImageUpload.style.borderColor = 'var(--pastel-gold)';
+            });
+
+            profileImageUpload.addEventListener('dragleave', () => {
+                profileImageUpload.style.borderColor = '';
+            });
+
+            profileImageUpload.addEventListener('drop', (e) => {
+                e.preventDefault();
+                profileImageUpload.style.borderColor = '';
+                if (e.dataTransfer.files.length) {
+                    const file = e.dataTransfer.files[0];
+                    if (file.type.indexOf('image') !== -1) {
+                        if (file.size > MAX_THUMBNAIL_SIZE) {
+                            alert(`이미지 크기는 ${formatFileSize(MAX_THUMBNAIL_SIZE)} 이하여야 합니다.\n현재 크기: ${formatFileSize(file.size)}`);
+                            return;
+                        }
+                        handleProfileImageFile(file);
+                    }
+                }
+            });
 
             // 전역 붙여넣기
             document.addEventListener('paste', (e) => {
