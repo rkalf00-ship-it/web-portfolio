@@ -1666,6 +1666,17 @@
         <div class="modal">
             <h2 class="modal-title">⚙️ 설정</h2>
             <div class="form-group">
+                <label class="form-label">프로필 이미지 크기</label>
+                <p style="font-size: 0.85rem; color: var(--text-mid); margin-bottom: 10px;">
+                    프로필 이미지의 표시 크기를 조절합니다.
+                </p>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <input type="range" id="profileImageSizeSlider" min="80" max="300" value="150" step="10"
+                           style="flex: 1;" oninput="updateProfileImageSize(this.value)">
+                    <span id="profileImageSizeValue" style="min-width: 60px; font-weight: 600; color: var(--pastel-gold);">150px</span>
+                </div>
+            </div>
+            <div class="form-group">
                 <label class="form-label">다운로드 버튼 공개</label>
                 <p style="font-size: 0.85rem; color: var(--text-mid); margin-bottom: 10px;">
                     활성화하면 로그인하지 않은 사용자도 폴더 다운로드 버튼을 볼 수 있습니다.
@@ -2098,6 +2109,7 @@
         let draggedItem = null;
         let downloadEnabled = false; // 다운로드 버튼 표시 여부
         let serviceWorkerRegistration = null; // Service Worker 등록 객체
+        let profileImageSize = 150; // 프로필 이미지 크기 (px)
 
         // 자기소개 스타일
         let currentIntroAlign = 'left';
@@ -3606,6 +3618,55 @@
             }
         }
 
+        // ============ 프로필 이미지 크기 설정 ============
+        async function updateProfileImageSize(size) {
+            try {
+                profileImageSize = parseInt(size);
+
+                // UI 업데이트
+                document.getElementById('profileImageSizeValue').textContent = size + 'px';
+
+                // 프로필 이미지 크기 적용
+                const profileImg = document.querySelector('.profile-image');
+                if (profileImg) {
+                    profileImg.style.width = size + 'px';
+                    profileImg.style.height = size + 'px';
+                }
+
+                // Firebase에 저장
+                await database.ref('settings/profileImageSize').set(parseInt(size));
+            } catch (error) {
+                console.error('프로필 이미지 크기 저장 오류:', error);
+            }
+        }
+
+        async function loadProfileImageSize() {
+            try {
+                const snapshot = await database.ref('settings/profileImageSize').once('value');
+                const size = snapshot.val();
+                if (size !== null) {
+                    profileImageSize = size;
+
+                    // 슬라이더 업데이트
+                    const slider = document.getElementById('profileImageSizeSlider');
+                    const valueDisplay = document.getElementById('profileImageSizeValue');
+                    if (slider && valueDisplay) {
+                        slider.value = size;
+                        valueDisplay.textContent = size + 'px';
+                    }
+
+                    // 프로필 이미지 크기 적용
+                    const profileImg = document.querySelector('.profile-image');
+                    if (profileImg) {
+                        profileImg.style.width = size + 'px';
+                        profileImg.style.height = size + 'px';
+                    }
+                }
+            } catch (error) {
+                console.error('프로필 이미지 크기 로드 오류:', error);
+            }
+        }
+
         // ============ 연락처 수정/추가 ============
         let editingContactIndex = -1;
 
@@ -4807,6 +4868,8 @@
                 console.log('사이트 타이틀 로드 완료');
                 await loadDownloadSettings();
                 console.log('다운로드 설정 로드 완료');
+                await loadProfileImageSize();
+                console.log('프로필 이미지 크기 로드 완료');
                 await loadProfile();
                 console.log('프로필 로드 완료');
                 await loadIntro();
