@@ -1684,14 +1684,14 @@
 
     <!-- CSV 뷰어 모달 -->
     <div class="modal-overlay" id="csvModal">
-        <div class="modal" style="max-width: 1200px; width: 95%;">
+        <div class="modal" style="max-width: 95vw; width: 95%; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column;">
             <h2 class="modal-title" id="csvModalTitle">📊 CSV 파일 뷰어</h2>
-            <div style="overflow-x: auto; max-height: 600px; margin: 20px 0;">
-                <table id="csvTable" style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+            <div style="overflow: auto; flex: 1; margin: 20px 0;">
+                <table id="csvTable" style="width: max-content; min-width: 100%; border-collapse: collapse; font-size: 0.85rem; white-space: nowrap;">
                     <!-- CSV 데이터가 여기에 표시됩니다 -->
                 </table>
             </div>
-            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <div style="display: flex; gap: 10px; justify-content: flex-end; padding-top: 10px; border-top: 1px solid var(--border-light);">
                 <button class="form-btn secondary" onclick="downloadCSV()">다운로드</button>
                 <button class="form-btn secondary" onclick="closeModal('csvModal')">닫기</button>
             </div>
@@ -2884,8 +2884,8 @@
                 const cells = parseCSVLine(line);
                 const tag = index === 0 ? 'th' : 'td';
                 const style = index === 0
-                    ? 'background: var(--pastel-gold-light); padding: 12px; border: 1px solid var(--border-light); font-weight: 600; text-align: left;'
-                    : 'padding: 10px; border: 1px solid var(--border-light);';
+                    ? 'background: var(--pastel-gold-light); padding: 12px 16px; border: 1px solid var(--border-light); font-weight: 600; text-align: left; white-space: nowrap; min-width: 120px;'
+                    : 'padding: 10px 16px; border: 1px solid var(--border-light); white-space: nowrap;';
 
                 html += '<tr>';
                 cells.forEach(cell => {
