@@ -1666,17 +1666,6 @@
         <div class="modal">
             <h2 class="modal-title">⚙️ 설정</h2>
             <div class="form-group">
-                <label class="form-label">프로필 이미지 크기</label>
-                <p style="font-size: 0.85rem; color: var(--text-mid); margin-bottom: 10px;">
-                    프로필 이미지의 표시 크기를 조절합니다.
-                </p>
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <input type="range" id="profileImageSizeSlider" min="80" max="300" value="150" step="10"
-                           style="flex: 1;" oninput="updateProfileImageSize(this.value)">
-                    <span id="profileImageSizeValue" style="min-width: 60px; font-weight: 600; color: var(--pastel-gold);">150px</span>
-                </div>
-            </div>
-            <div class="form-group">
                 <label class="form-label">다운로드 버튼 공개</label>
                 <p style="font-size: 0.85rem; color: var(--text-mid); margin-bottom: 10px;">
                     활성화하면 로그인하지 않은 사용자도 폴더 다운로드 버튼을 볼 수 있습니다.
@@ -1723,6 +1712,13 @@
                     <button type="button" class="thumbnail-remove-btn" id="profileImageRemoveBtn" onclick="event.stopPropagation(); removeProfileImage()" style="display: none;">×</button>
                 </div>
                 <input type="file" id="profileImageInput" style="display: none;" accept="image/*" onchange="handleProfileImageSelect(event)">
+            </div>
+            <div class="form-group">
+                <label class="form-label">프로필 이미지 크기</label>
+                <div class="size-slider-group">
+                    <input type="range" id="profileImageSizeSlider" min="80" max="300" step="10" value="150" oninput="updateProfileImageSize(this.value)">
+                    <div class="size-value" id="profileImageSizeValue">150px</div>
+                </div>
             </div>
             <div class="form-group">
                 <label class="form-label">메인 타이틀</label>
@@ -3624,13 +3620,16 @@
                 profileImageSize = parseInt(size);
 
                 // UI 업데이트
-                document.getElementById('profileImageSizeValue').textContent = size + 'px';
+                const valueDisplay = document.getElementById('profileImageSizeValue');
+                if (valueDisplay) {
+                    valueDisplay.textContent = size + 'px';
+                }
 
-                // 프로필 이미지 크기 적용
-                const profileImg = document.querySelector('.profile-image');
-                if (profileImg) {
-                    profileImg.style.width = size + 'px';
-                    profileImg.style.height = size + 'px';
+                // 프로필 이미지 컨테이너 크기 적용
+                const profileImageContainer = document.getElementById('profileImage');
+                if (profileImageContainer) {
+                    profileImageContainer.style.width = size + 'px';
+                    profileImageContainer.style.height = size + 'px';
                 }
 
                 // Firebase에 저장
@@ -3655,11 +3654,11 @@
                         valueDisplay.textContent = size + 'px';
                     }
 
-                    // 프로필 이미지 크기 적용
-                    const profileImg = document.querySelector('.profile-image');
-                    if (profileImg) {
-                        profileImg.style.width = size + 'px';
-                        profileImg.style.height = size + 'px';
+                    // 프로필 이미지 컨테이너 크기 적용
+                    const profileImageContainer = document.getElementById('profileImage');
+                    if (profileImageContainer) {
+                        profileImageContainer.style.width = size + 'px';
+                        profileImageContainer.style.height = size + 'px';
                     }
                 }
             } catch (error) {
