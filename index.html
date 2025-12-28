@@ -2889,7 +2889,9 @@
 
                 html += '<tr>';
                 cells.forEach(cell => {
-                    html += `<${tag} style="${style}">${escapeHtml(cell)}</${tag}>`;
+                    // 셀 내부의 줄바꿈을 공백으로 변환 (헤더가 세로로 보이는 문제 해결)
+                    const cleanedCell = cell.replace(/\r?\n/g, ' ').trim();
+                    html += `<${tag} style="${style}">${escapeHtml(cleanedCell)}</${tag}>`;
                 });
                 html += '</tr>';
             });
