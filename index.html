@@ -907,12 +907,17 @@
         }
 
         .card-action-btn.primary {
+            background: var(--pastel-blue-dark);
+            color: white;
+        }
+
+        .card-action-btn.primary:hover {
             background: var(--pastel-blue);
             color: var(--pastel-blue-dark);
         }
 
-        .card-action-btn.primary:hover {
-            background: var(--pastel-blue-dark);
+        .card-action-btn.primary:active {
+            background: #1a5490;
             color: white;
         }
 
@@ -2352,15 +2357,28 @@
         }
 
         // Storage에서 파일 다운로드 URL 가져오기
-        async function getFile(fileId) {
+        async function getFile(fileId, forceDownload = false) {
             console.log('=== getFile 시작 ===');
             console.log('요청 파일 ID:', fileId);
+            console.log('강제 다운로드:', forceDownload);
 
             try {
                 const storageRef = storage.ref('files/' + fileId);
-                const url = await storageRef.getDownloadURL();
+                let url = await storageRef.getDownloadURL();
 
-                console.log('다운로드 URL 조회 완료');
+                // 브라우저에서 바로 열기 위해 alt=media 파라미터 추가
+                // (다운로드가 아닌 inline 표시용)
+                if (!forceDownload) {
+                    // URL에 이미 쿼리 파라미터가 있는지 확인
+                    const separator = url.includes('?') ? '&' : '?';
+                    // token 파라미터는 유지하고 alt=media 추가
+                    url = url.replace('?alt=media&token=', '?alt=media&token=');
+                    if (!url.includes('alt=media')) {
+                        url = url + separator + 'alt=media';
+                    }
+                }
+
+                console.log('파일 URL 조회 완료');
                 return url;
             } catch (error) {
                 console.error('=== getFile 오류 ===');
@@ -2602,7 +2620,11 @@
                     }
 
                     // 단일 파일은 Storage URL로 열기
-                    const fileUrl = await getFile(item.fileId);
+                    // 다운로드해야 하는 파일 형식 확인
+                    const downloadTypes = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip'];
+                    const shouldDownload = downloadTypes.includes(item.fileType?.toLowerCase());
+
+                    const fileUrl = await getFile(item.fileId, shouldDownload);
 
                     if (fileUrl) {
                         console.log('2. 파일 URL 조회 성공:', fileUrl);
@@ -2619,9 +2641,8 @@
                         link.target = '_blank';
                         link.rel = 'noopener noreferrer';
 
-                        // 일부 파일 형식은 다운로드로 처리
-                        const downloadTypes = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip'];
-                        if (downloadTypes.includes(item.fileType?.toLowerCase())) {
+                        // 다운로드해야 하는 파일만 download 속성 추가
+                        if (shouldDownload) {
                             link.download = item.fileName || item.title + '.' + item.fileType;
                         }
 
