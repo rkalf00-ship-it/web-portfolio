@@ -2295,22 +2295,20 @@
         // 단일 파일을 Storage에 저장 (Base64 또는 File 객체)
         async function saveFile(fileId, data, metadata = {}) {
             try {
-                console.log('saveFile 호출:', fileId, '타입:', typeof data);
+                console.log('saveFile 호출:', fileId, '타입:', typeof data, '메타데이터:', metadata);
 
                 let blob;
-                if (typeof data === 'string') {
-                    // Base64 문자열을 Blob으로 변환
-                    blob = base64ToBlob(data, metadata.type || 'application/octet-stream');
-                } else if (data instanceof Blob || data instanceof File) {
+                if (data instanceof Blob || data instanceof File) {
+                    // File 또는 Blob 객체를 그대로 사용
                     blob = data;
                 } else {
-                    throw new Error('지원하지 않는 데이터 타입');
+                    throw new Error('지원하지 않는 데이터 타입: ' + typeof data);
                 }
 
                 const storageRef = storage.ref('files/' + fileId);
                 const uploadTask = await storageRef.put(blob, metadata);
 
-                console.log('saveFile 완료:', fileId);
+                console.log('saveFile 완료:', fileId, 'contentType:', metadata.contentType);
                 return uploadTask;
             } catch (error) {
                 console.error('saveFile error:', error);
@@ -4223,7 +4221,13 @@
                 }
 
                 if (selectedThumbnail) {
-                    await saveFile(itemId + '_thumb', selectedThumbnail);
+                    // 썸네일도 적절한 메타데이터와 함께 저장
+                    if (typeof selectedThumbnail === 'string') {
+                        const blob = base64ToBlob(selectedThumbnail, 'image/jpeg');
+                        await saveFile(itemId + '_thumb', blob, { contentType: 'image/jpeg' });
+                    } else {
+                        await saveFile(itemId + '_thumb', selectedThumbnail, { contentType: selectedThumbnail.type });
+                    }
                     console.log('썸네일 저장 완료');
                 }
 
@@ -4457,7 +4461,13 @@
                         await deleteFile(itemId + '_thumb');
                     } else if (editThumbnail) {
                         item.thumbnail = editThumbnail;
-                        await saveFile(itemId + '_thumb', editThumbnail);
+                        // 썸네일도 File 객체로 저장 (base64가 아닌 경우 Blob으로 변환)
+                        if (typeof editThumbnail === 'string') {
+                            const blob = base64ToBlob(editThumbnail, 'image/jpeg');
+                            await saveFile(itemId + '_thumb', blob, { contentType: 'image/jpeg' });
+                        } else {
+                            await saveFile(itemId + '_thumb', editThumbnail, { contentType: editThumbnail.type });
+                        }
                     }
                 }
 
@@ -4465,10 +4475,10 @@
                     if (item.fileId) {
                         await deleteFile(item.fileId);
                     }
-                    
-                    const base64 = await fileToBase64(editNewFile);
-                    await saveFile(itemId, base64);
-                    
+
+                    // File 객체를 직접 전달 (base64 변환하지 않음)
+                    await saveFile(itemId, editNewFile, { contentType: editNewFile.type });
+
                     item.fileId = itemId;
                     item.fileType = editNewFile.name.split('.').pop().toLowerCase();
                     item.mimeType = editNewFile.type;
@@ -4476,6 +4486,11 @@
                 }
 
                 await saveMetadata(item);
+
+                // 캐시 업데이트
+                itemsCache[itemId] = item;
+                console.log('캐시 업데이트 완료:', itemId);
+
                 closeModal('editModal');
                 await renderSectionsAndNav();
                 await renderAllSections();
