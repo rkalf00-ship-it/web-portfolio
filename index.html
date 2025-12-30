@@ -2305,10 +2305,16 @@
                     throw new Error('지원하지 않는 데이터 타입: ' + typeof data);
                 }
 
-                const storageRef = storage.ref('files/' + fileId);
-                const uploadTask = await storageRef.put(blob, metadata);
+                // contentDisposition을 'inline'으로 설정하여 브라우저에서 직접 열리도록 함
+                const uploadMetadata = {
+                    ...metadata,
+                    contentDisposition: 'inline'
+                };
 
-                console.log('saveFile 완료:', fileId, 'contentType:', metadata.contentType);
+                const storageRef = storage.ref('files/' + fileId);
+                const uploadTask = await storageRef.put(blob, uploadMetadata);
+
+                console.log('saveFile 완료:', fileId, 'contentType:', uploadMetadata.contentType, 'contentDisposition:', uploadMetadata.contentDisposition);
                 return uploadTask;
             } catch (error) {
                 console.error('saveFile error:', error);
@@ -2328,7 +2334,13 @@
                     const filePath = `folders/${folderId}/${file.webkitRelativePath || file.name}`;
                     const storageRef = storage.ref(filePath);
 
-                    const uploadPromise = storageRef.put(file).then(() => {
+                    // 폴더 내 파일도 브라우저에서 직접 열리도록 메타데이터 설정
+                    const metadata = {
+                        contentType: file.type,
+                        contentDisposition: 'inline'
+                    };
+
+                    const uploadPromise = storageRef.put(file, metadata).then(() => {
                         completedCount++;
                         if (onProgress) {
                             onProgress(completedCount, files.length);
@@ -2361,17 +2373,7 @@
 
             try {
                 const storageRef = storage.ref('files/' + fileId);
-                let url = await storageRef.getDownloadURL();
-
-                // 다운로드가 아닌 브라우저에서 열기
-                if (!forceDownload) {
-                    // URL에 contentDisposition=inline 파라미터 추가
-                    // 이렇게 하면 파일이 다운로드되지 않고 브라우저에서 직접 열립니다
-                    const urlObj = new URL(url);
-                    urlObj.searchParams.set('contentDisposition', 'inline');
-                    url = urlObj.toString();
-                    console.log('브라우저에서 열기 모드 - URL 수정됨');
-                }
+                const url = await storageRef.getDownloadURL();
 
                 console.log('파일 URL 조회 완료:', url);
                 return url;
