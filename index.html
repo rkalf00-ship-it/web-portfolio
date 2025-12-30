@@ -2298,23 +2298,22 @@
                 console.log('saveFile 호출:', fileId, '타입:', typeof data, '메타데이터:', metadata);
 
                 let blob;
+                let fileName = 'file';
+
                 if (data instanceof Blob || data instanceof File) {
                     // File 또는 Blob 객체를 그대로 사용
                     blob = data;
+                    if (data instanceof File) {
+                        fileName = data.name;
+                    }
                 } else {
                     throw new Error('지원하지 않는 데이터 타입: ' + typeof data);
                 }
 
-                // contentDisposition을 'inline'으로 설정하여 브라우저에서 직접 열리도록 함
-                const uploadMetadata = {
-                    ...metadata,
-                    contentDisposition: 'inline'
-                };
-
                 const storageRef = storage.ref('files/' + fileId);
-                const uploadTask = await storageRef.put(blob, uploadMetadata);
+                const uploadTask = await storageRef.put(blob, metadata);
 
-                console.log('saveFile 완료:', fileId, 'contentType:', uploadMetadata.contentType, 'contentDisposition:', uploadMetadata.contentDisposition);
+                console.log('saveFile 완료:', fileId, 'contentType:', metadata.contentType);
                 return uploadTask;
             } catch (error) {
                 console.error('saveFile error:', error);
@@ -2334,10 +2333,9 @@
                     const filePath = `folders/${folderId}/${file.webkitRelativePath || file.name}`;
                     const storageRef = storage.ref(filePath);
 
-                    // 폴더 내 파일도 브라우저에서 직접 열리도록 메타데이터 설정
+                    // 폴더 내 파일도 contentType 메타데이터 설정
                     const metadata = {
-                        contentType: file.type,
-                        contentDisposition: 'inline'
+                        contentType: file.type
                     };
 
                     const uploadPromise = storageRef.put(file, metadata).then(() => {
@@ -2628,11 +2626,28 @@
                             return;
                         }
 
-                        // 새 탭에서 파일 열기 (다운로드가 아닌 브라우저에서 표시)
-                        window.open(fileUrl, '_blank', 'noopener,noreferrer');
+                        // Blob을 fetch하여 브라우저에서 직접 열기
+                        try {
+                            const response = await fetch(fileUrl);
+                            const blob = await response.blob();
 
-                        console.log('3. 파일 열기 완료');
-                        return;
+                            // Blob URL 생성 (올바른 MIME 타입 사용)
+                            const blobUrl = URL.createObjectURL(new Blob([blob], { type: item.mimeType || blob.type }));
+
+                            // 새 탭에서 파일 열기 (다운로드가 아닌 브라우저에서 표시)
+                            const newWindow = window.open(blobUrl, '_blank', 'noopener,noreferrer');
+
+                            // 창이 닫힐 때를 대비해 일정 시간 후 Blob URL 해제
+                            setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+
+                            console.log('3. 파일 열기 완료');
+                            return;
+                        } catch (fetchError) {
+                            console.error('파일 fetch 오류:', fetchError);
+                            // Fetch 실패 시 직접 URL로 열기 시도
+                            window.open(fileUrl, '_blank', 'noopener,noreferrer');
+                            return;
+                        }
                     } else {
                         console.error('파일 URL 없음 - fileId:', item.fileId);
                         alert('파일을 찾을 수 없습니다.\n\nfileId: ' + item.fileId + '\n\nFirebase Storage에서 파일이 삭제되었거나 권한이 없을 수 있습니다.');
