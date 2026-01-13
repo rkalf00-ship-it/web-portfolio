@@ -2089,23 +2089,33 @@
     
     <script>
         // ============ Firebase 설정 ============
+        // Firebase Console → 프로젝트 설정 → 일반 → SDK 설정 및 구성에서 확인
         const firebaseConfig = {
             apiKey: "AIzaSyBZ5mWnlloXbbcEc0V5QZ_N4vguDWtiKb0",
             authDomain: "web-portfolio-e7e05.firebaseapp.com",
             projectId: "web-portfolio-e7e05",
             databaseURL: "https://web-portfolio-e7e05-default-rtdb.firebaseio.com/",
-            storageBucket: "web-portfolio-e7e05.firebasestorage.app"
+            storageBucket: "web-portfolio-e7e05.firebasestorage.app",
+            // Analytics 사용 시 필요 (Firebase Console에서 확인)
+            // messagingSenderId: "YOUR_SENDER_ID",
+            // appId: "YOUR_APP_ID",
+            // measurementId: "G-XXXXXXXXXX"
         };
 
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const storage = firebase.storage();
 
-        // 관리자가 아닌 경우에만 Analytics 초기화
+        // 관리자가 아닌 경우에만 Analytics 초기화 (appId가 필요하므로 try-catch 사용)
         let analytics = null;
         if (!localStorage.getItem('portfolio_admin')) {
-            analytics = firebase.analytics();
-            console.log('Firebase Analytics 초기화 완료 (방문자 추적 활성화)');
+            try {
+                analytics = firebase.analytics();
+                console.log('Firebase Analytics 초기화 완료 (방문자 추적 활성화)');
+            } catch (error) {
+                console.warn('Firebase Analytics 초기화 실패 (appId 누락 가능):', error.message);
+                console.log('Analytics 없이 계속 진행합니다.');
+            }
         } else {
             console.log('관리자 모드: Analytics 추적 비활성화');
         }
