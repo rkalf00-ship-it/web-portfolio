@@ -4967,6 +4967,7 @@
         async function init() {
             try {
                 console.log('포트폴리오 초기화 시작...');
+                console.log('Firebase 설정:', firebaseConfig);
                 checkSession();
 
                 // Service Worker 등록 (백그라운드)
@@ -4998,6 +4999,18 @@
                 console.log('포트폴리오 초기화 완료!');
             } catch (error) {
                 console.error('초기화 오류:', error);
+                console.error('오류 상세:', error.message, error.stack);
+                // 페이지에 오류 표시
+                document.body.innerHTML = `
+                    <div style="padding: 40px; text-align: center; font-family: Arial;">
+                        <h1>⚠️ 페이지 로드 오류</h1>
+                        <p>포트폴리오를 불러오는 중 오류가 발생했습니다.</p>
+                        <p style="color: #666;">오류: ${error.message}</p>
+                        <button onclick="location.reload()" style="padding: 10px 20px; margin-top: 20px; cursor: pointer;">
+                            🔄 새로고침
+                        </button>
+                    </div>
+                `;
             }
         }
 
