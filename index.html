@@ -1956,9 +1956,9 @@
                     <button type="button" class="form-btn secondary" style="flex: 1;" onclick="document.getElementById('fileInput').click()">📄 파일 선택</button>
                     <button type="button" class="form-btn secondary" style="flex: 1;" onclick="document.getElementById('folderInput').click()">📁 폴더 선택</button>
                 </div>
-                <div class="file-upload-area" id="fileUploadArea">
+                <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('fileInput').click()" style="cursor: pointer;">
                     <div class="file-upload-icon">📁</div>
-                    <div class="file-upload-text">파일 또는 폴더를 선택하세요</div>
+                    <div class="file-upload-text">클릭하여 파일을 선택하거나 드래그하세요</div>
                     <div class="file-upload-hint">파일/폴더: 최대 500MB</div>
                 </div>
                 <input type="file" id="fileInput" style="display: none;" accept="*/*" onchange="handleFileSelect(event)">
@@ -2485,6 +2485,26 @@
                 updateLoginUI();
             }
         }
+
+        // Firebase Auth 상태 변경 감지 (세션 유효성 실시간 검증)
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                isLoggedIn = true;
+                sessionStorage.setItem('portfolioLoggedIn', 'true');
+                localStorage.setItem('portfolio_admin', 'true');
+            } else {
+                // Firebase Auth 세션이 만료/없는 경우 로그아웃 처리
+                if (isLoggedIn) {
+                    isLoggedIn = false;
+                    sessionStorage.removeItem('portfolioLoggedIn');
+                }
+            }
+            // DOM이 준비된 상태에서만 UI 업데이트
+            if (document.getElementById('loginBtn')) {
+                updateLoginUI();
+                updateUI();
+            }
+        });
 
         async function login() {
             const email = document.getElementById('loginEmail').value.trim();
@@ -3150,8 +3170,11 @@
 
         function createCardHTML(item, category) {
             const fileTypeIcon = getFileTypeIcon(item.fileType);
-            const thumbnailHTML = item.thumbnail
-                ? `<img src="data:image/jpeg;base64,${item.thumbnail}" alt="${item.title}">`
+            const thumbSrc = item.thumbnail
+                ? (item.thumbnail.startsWith('http') ? item.thumbnail : 'data:image/jpeg;base64,' + item.thumbnail)
+                : null;
+            const thumbnailHTML = thumbSrc
+                ? `<img src="${thumbSrc}" alt="${item.title}">`
                 : `<div class="card-thumbnail-placeholder">${fileTypeIcon}</div>`;
 
             // WebGL 실행 버튼 및 다운로드 버튼
@@ -4263,6 +4286,7 @@
                     document.getElementById('progressText').textContent = '업로드 완료!';
                 }
 
+                let thumbnailUrl = null;
                 if (selectedThumbnail) {
                     // 썸네일도 적절한 메타데이터와 함께 저장
                     if (typeof selectedThumbnail === 'string') {
@@ -4271,7 +4295,9 @@
                     } else {
                         await saveFile(itemId + '_thumb', selectedThumbnail, { contentType: selectedThumbnail.type });
                     }
-                    console.log('썸네일 저장 완료');
+                    // Storage URL을 메타데이터에 저장 (base64 대신)
+                    thumbnailUrl = await getFile(itemId + '_thumb');
+                    console.log('썸네일 저장 완료, URL:', thumbnailUrl);
                 }
 
                 const data = await getAllMetadata();
@@ -4288,7 +4314,7 @@
                     fileType,
                     mimeType,
                     fileName,
-                    thumbnail: selectedThumbnail,
+                    thumbnail: thumbnailUrl,
                     tags: currentTags,
                     order: items.length,
                     createdAt: Date.now(),
@@ -4378,7 +4404,8 @@
             renderTags('editTagsContainer', editTags, 'edit');
 
             if (item.thumbnail) {
-                document.getElementById('editThumbnailPreviewImg').src = 'data:image/jpeg;base64,' + item.thumbnail;
+                const editThumbSrc = item.thumbnail.startsWith('http') ? item.thumbnail : 'data:image/jpeg;base64,' + item.thumbnail;
+                document.getElementById('editThumbnailPreviewImg').src = editThumbSrc;
                 document.getElementById('editThumbnailPreviewImg').style.display = 'block';
                 document.getElementById('editThumbnailPlaceholder').style.display = 'none';
                 document.getElementById('editThumbnailRemoveBtn').style.display = 'block';
@@ -4503,14 +4530,15 @@
                         item.thumbnail = null;
                         await deleteFile(itemId + '_thumb');
                     } else if (editThumbnail) {
-                        item.thumbnail = editThumbnail;
                         // 썸네일도 File 객체로 저장 (base64가 아닌 경우 Blob으로 변환)
-                        if (typeof editThumbnail === 'string') {
+                        if (typeof editThumbnail === 'string' && !editThumbnail.startsWith('http')) {
                             const blob = base64ToBlob(editThumbnail, 'image/jpeg');
                             await saveFile(itemId + '_thumb', blob, { contentType: 'image/jpeg' });
-                        } else {
+                        } else if (editThumbnail instanceof Blob || editThumbnail instanceof File) {
                             await saveFile(itemId + '_thumb', editThumbnail, { contentType: editThumbnail.type });
                         }
+                        // Storage URL을 메타데이터에 저장 (base64 대신)
+                        item.thumbnail = await getFile(itemId + '_thumb');
                     }
                 }
 
